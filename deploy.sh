@@ -23,8 +23,8 @@ git checkout -B gh-pages
 git add -A
 git commit -m 'Deploy'
 
-# Add the remote repository (replace with your actual GitHub repository URL)
-git remote add origin https://github.com/aishasalim/aishasalim.github.io.git
+# Add the remote repository (user site repo)
+git remote add origin https://github.com/iqbal-sk/iqbal-sk.github.io.git
 
 # Force push to the gh-pages branch
 git push -f origin gh-pages
