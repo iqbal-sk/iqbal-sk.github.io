@@ -323,11 +323,14 @@ const ExperienceProjects = () => {
   const figureSizeClass = (siteConfig?.visuals?.project?.figureSizeClass) || 'max-w-xl md:max-w-2xl mx-auto';
   const imgSizeClass = (siteConfig?.visuals?.project?.imgSizeClass) || 'max-h-64 md:max-h-80 object-contain';
 
-  // Sync with hash (both directions)
+  // Sync with hash (both directions) — but only react to explicit anchors
+  // Avoid flipping tabs on unrelated hash changes during scroll/nav (e.g., #about, #skills)
   useEffect(() => {
     const apply = () => {
       const h = window.location.hash;
-      setTab(h === "#portfolio" ? "portfolio" : "experience");
+      if (h === "#portfolio") setTab("portfolio");
+      else if (h === "#experience") setTab("experience");
+      // ignore other hashes to preserve current tab
     };
     apply();
     window.addEventListener("hashchange", apply);
