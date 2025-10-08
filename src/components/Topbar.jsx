@@ -69,13 +69,13 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
 
         {/* Desktop right actions */}
         <div className="hidden md:flex grow items-center justify-end gap-x-3.5">
-          <ThemeToggle />
+          <ThemeToggle compact />
           {siteConfig.calendlyUrl && (
             <CalendlyButton url={siteConfig.calendlyUrl} label={siteConfig.calendlyLabel || 'Quick chat'} />
           )}
         </div>
 
-        {/* Mobile: show CTA next to name only when menu open */}
+        {/* Mobile: CTA next to name only when menu open */}
         {openNavigation && siteConfig.calendlyUrl && (
           <div className="md:hidden mr-auto ml-3">
             <CalendlyButton url={siteConfig.calendlyUrl} label={siteConfig.calendlyLabel || 'Quick chat'} />
@@ -83,27 +83,25 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
         )}
 
 
-        {/* Mobile hamburger */}
-        <div className="block md:hidden">
+        {/* Mobile theme toggle + hamburger */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle compact className="" />
           <MenuSvg toggleNavigation={toggleNavigation} openNavigation={openNavigation} />
         </div>
       </div>
-
-      {/* Mobile fullscreen overlay BACKDROP (below header, no clicks) */}
-      {openNavigation && (
-        <div
-          aria-hidden
-          className="fixed inset-0 z-30 md:hidden pointer-events-none"
-          style={{ background: 'var(--mobile-overlay)', backdropFilter: 'blur(12px)' }}
-        />
-      )}
 
       {/* Mobile fullscreen MENU (below header, above backdrop) */}
       {openNavigation && (
         <nav
           id="mobile-menu"
           className="fixed inset-x-0 bottom-0 z-40 md:hidden"
-          style={{ top: headerH }}
+          style={{
+            top: headerH,
+            minHeight: `calc(100vh - ${headerH}px)`,
+            background: 'var(--mobile-overlay)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)'
+          }}
           role="dialog"
           aria-modal="true"
         >

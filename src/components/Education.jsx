@@ -107,7 +107,7 @@ const Education = () => {
       <h2
         ref={(el) => observe(el, "edu-title")}
         className={[
-          "text-4xl font-bold mb-8 text-center text-transparent bg-clip-text",
+          "text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center text-transparent bg-clip-text",
           "bg-[linear-gradient(183deg,rgba(236,241,253,0)_13.9%,rgba(236,241,253,0.30)_121.71%),linear-gradient(0deg,#2E3038,#2E3038)]",
           "transition-all duration-700",
           visible.has("edu-title")
@@ -124,7 +124,7 @@ const Education = () => {
             key={i}
             ref={(el) => observe(el, `edu-card-${i}`)}
             className={[
-              "relative overflow-hidden p-6 rounded-[28px] border border-white/60 bg-white/55",
+              "relative overflow-hidden p-4 sm:p-6 rounded-[24px] sm:rounded-[28px] border border-white/60 bg-white/55",
               "shadow-[0_1px_0_0_rgba(255,255,255,0.7)_inset,0_1px_2px_rgba(15,23,42,0.03),0_12px_40px_-12px_rgba(15,23,42,0.18)]",
               "supports-[backdrop-filter]:backdrop-blur-2xl ",
               "transition-all duration-700",
@@ -148,28 +148,30 @@ const Education = () => {
               }}
             />
 
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4 min-w-0">
+            {/* Responsive card content: stack on mobile, row on larger screens */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
                 {education.logo && (
-                  <div className="w-12 h-12 rounded-lg bg-white border border-gray-200 p-1 flex items-center justify-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white border border-gray-200 p-1 flex items-center justify-center shrink-0">
                     <img
                       src={education.logo}
                       alt={`${education.school} logo`}
-                      className="w-10 h-10 object-contain"
+                      className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                       loading="lazy"
                     />
                   </div>
                 )}
                 <div className="min-w-0">
-                  <h3 className="text-2xl font-semibold text-gray-800">
+                  <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 leading-tight">
                     {education.degree}
                   </h3>
-                  <p className="text-lg text-gray-600 truncate">{education.school}</p>
+                  <p className="text-sm sm:text-lg text-gray-600 truncate">{education.school}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              {/* Meta row: badge + date; sits below on mobile */}
+              <div className="flex items-center gap-2 text-gray-500">
                 {education.details?.find((d)=>/cgpa/i.test(d)) && (
-                  <span className="inline-flex items-center rounded-full border border-gray-300 bg-white px-2 py-0.5 text-xs text-gray-700">
+                  <span className="inline-flex items-center rounded-full border border-gray-300 bg-white px-2 sm:px-2.5 py-0.5 text-[11px] sm:text-xs text-gray-700">
                     {(() => {
                       const d = education.details.find((x)=>/cgpa/i.test(x)) || '';
                       const v = (d.split(':')[1] || d.replace(/cgpa/i,'')).trim();
@@ -177,7 +179,7 @@ const Education = () => {
                     })()}
                   </span>
                 )}
-                <p className="text-sm text-gray-500 whitespace-nowrap">{education.date}</p>
+                <p className="text-xs sm:text-sm whitespace-nowrap">{education.date}</p>
               </div>
             </div>
           </div>

@@ -2,10 +2,11 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 // Segmented switch with a smooth sliding background thumb. No content animation.
 export default function SegmentedSwitch({
-  options = [], // [{label, value}]
+  options = [], // [{label: ReactNode, value}]
   value,
   onChange,
   className = "",
+  buttonClassName = "px-3 py-1.5 text-sm",
 }) {
   const wrapRef = useRef(null);
   const btnRefs = useRef(new Map());
@@ -94,10 +95,12 @@ export default function SegmentedSwitch({
           data-role="seg-btn"
           data-value={String(opt.value)}
           type="button"
-          className={`relative z-[2] px-3 py-1.5 text-sm transition-colors duration-300 pointer-events-auto ${
+          className={`relative z-[2] ${buttonClassName} transition-colors duration-300 pointer-events-auto ${
             value === opt.value ? "text-primary-foreground" : "text-foreground hover:bg-muted/60"
           }`}
           aria-pressed={value === opt.value}
+          aria-label={opt.aria || opt.ariaLabel || undefined}
+          title={typeof opt.label === 'string' ? undefined : (opt.aria || opt.ariaLabel || '')}
         >
           {opt.label}
         </button>
