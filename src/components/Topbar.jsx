@@ -21,7 +21,7 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
   const navigation = [
     { id: 1, title: "Home", url: "#hero" },
     { id: 2, title: "About", url: "#about" },
-    { id: 3, title: "Portfolio", url: "#experience" },
+    { id: 3, title: "Portfolio", url: "#portfolio" },
     { id: 6, title: "Skills", url: "#skills" },
     { id: 5, title: "Experience", url: "#experience" },
     // Keep core anchors only; hide external Github from topbar for now
