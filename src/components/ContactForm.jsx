@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import CalendlyButton from './CalendlyButton';
+import siteConfig from '../siteConfig';
 import emailjs from 'emailjs-com';
 
 const ContactForm = () => {
@@ -38,7 +40,7 @@ const ContactForm = () => {
   };
 
   useEffect(() => {
-    const message = "Hi, Aisha! 👋 I would like to connect with you!🚀";
+    const message = "Hi, Iqbal! 👋 I would like to connect with you!🚀";
     let index = 0;
 
     const typeEffect = () => {
@@ -81,7 +83,13 @@ const ContactForm = () => {
   <h2 className="text-4xl font-bold mb-8 text-center">Let's Connect 👋</h2>
 
   <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-    <p className="mb-6 text-lg">I'm based in Houston and happy to collaborate with people! <br /></p>
+    <p className="mb-4 text-lg">I’m happy to collaborate on interesting projects!</p>
+    {siteConfig.calendlyUrl && (
+      <div className="mb-6 flex flex-wrap gap-3">
+        <CalendlyButton url={siteConfig.calendlyUrl} label={siteConfig.calendlyLabel || 'Let\'s chat'} />
+        <span className="self-center text-sm text-gray-500">or send an email below</span>
+      </div>
+    )}
     <form onSubmit={handleSubmit}>
       <ul>
         <li className="mb-4">

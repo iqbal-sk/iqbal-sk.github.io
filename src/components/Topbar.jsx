@@ -1,14 +1,32 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import MenuSvg from "./MenuSvg";
+import ThemeToggle from "./ThemeToggle";
+import CalendlyButton from "./CalendlyButton";
+import siteConfig from "../siteConfig";
 
 const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
+  const headerRef = useRef(null);
+  const [headerH, setHeaderH] = useState(64);
+
+  // Track header height (for precise mobile overlay offset)
+  useEffect(() => {
+    const measure = () => {
+      const h = headerRef.current?.offsetHeight || 64;
+      setHeaderH(h);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
   const navigation = [
     { id: 1, title: "Home", url: "#hero" },
     { id: 2, title: "About", url: "#about" },
-    { id: 3, title: "Portfolio", url: "#portfolio" },
+    { id: 3, title: "Portfolio", url: "#experience" },
+    { id: 6, title: "Skills", url: "#skills" },
     { id: 5, title: "Experience", url: "#experience" },
-    { id: 7, title: "Github", url: "https://github.com/aishasalim" },
+    // Keep core anchors only; hide external Github from topbar for now
   ];
+
 
   // Lock scroll only for mobile overlay
   useEffect(() => {
@@ -19,13 +37,17 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
   }, [openNavigation]);
 
   return (
-    <header className="sticky top-0 z-50 relative flex items-center py-3 lg:py-[9px]">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 relative flex items-center py-3 lg:py-[9px] supports-[backdrop-filter]:backdrop-blur-md"
+      style={{ background: 'var(--header-bg)' }}
+    >
       {/* header row */}
       <div className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-5 md:px-8 lg:justify-start">
         {/* Brand */}
         <a href="/" className="mr-3 inline-flex shrink-0 items-center lg:mr-7">
-          <span className="text-lg md:text-xl font-semibold tracking-tight text-gray-900">
-            Aisha
+          <span className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
+            Iqbal
           </span>
           <span className="sr-only">Home</span>
         </a>
@@ -37,39 +59,27 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
               key={item.id}
               href={item.url}
               onClick={(e) => handleClick(e, item.url)}
-              className="px-4 py-2 text-sm font-medium tracking-tight text-gray-900 hover:text-indigo-500"
+              className="px-4 py-2 text-sm font-medium tracking-tight text-foreground hover:text-primary"
+              style={{ textShadow: '0 1px 1px rgba(0,0,0,0.4)' }}
             >
               {item.title}
             </a>
           ))}
         </nav>
 
-        {/* Desktop right action */}
+        {/* Desktop right actions */}
         <div className="hidden md:flex grow items-center justify-end gap-x-3.5">
-          <a
-            href="#contact"
-            onClick={(e) => handleClick(e, "#contact")}
-            className="inline-flex h-8 items-center justify-center rounded-[6px] px-4 text-[0.8125rem]
-                       font-medium tracking-tight text-white
-                       bg-[radial-gradient(84.32%_100%_at_49.77%_0%,#2E3038_46.14%,#1C1D22_100%)]
-                       hover:bg-[radial-gradient(84.32%_100%_at_49.77%_0%,#404451_46.14%,#2D2F38_100%)]"
-          >
-            Send Message
-          </a>
+          <ThemeToggle />
+          {siteConfig.calendlyUrl && (
+            <CalendlyButton url={siteConfig.calendlyUrl} label={siteConfig.calendlyLabel || 'Quick chat'} />
+          )}
         </div>
 
         {/* Mobile: show CTA next to name only when menu open */}
-        {openNavigation && (
-          <button
-            onClick={(e) => handleClick(e, "#contact")}
-            className="md:hidden mr-auto ml-3 inline-flex h-8 items-center justify-center rounded-[6px] px-3
-                      text-[0.8125rem] font-medium tracking-tight text-white
-                      bg-[radial-gradient(84.32%_100%_at_49.77%_0%,#2E3038_46.14%,#1C1D22_100%)]
-                      hover:bg-[radial-gradient(84.32%_100%_at_49.77%_0%,#404451_46.14%,#2D2F38_100%)]
-                      transition-colors"
-          >
-            Send Message
-          </button>
+        {openNavigation && siteConfig.calendlyUrl && (
+          <div className="md:hidden mr-auto ml-3">
+            <CalendlyButton url={siteConfig.calendlyUrl} label={siteConfig.calendlyLabel || 'Quick chat'} />
+          </div>
         )}
 
 
@@ -84,18 +94,16 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
         <div
           aria-hidden
           className="fixed inset-0 z-30 md:hidden pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(145deg, rgba(232,242,255,0.98), rgba(171,196,255,0.98))",
-            backdropFilter: "blur(12px)",
-          }}
+          style={{ background: 'var(--mobile-overlay)', backdropFilter: 'blur(12px)' }}
         />
       )}
 
       {/* Mobile fullscreen MENU (below header, above backdrop) */}
       {openNavigation && (
         <nav
-          className="fixed inset-x-0 top-16 bottom-0 z-40 md:hidden"
+          id="mobile-menu"
+          className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+          style={{ top: headerH }}
           role="dialog"
           aria-modal="true"
         >
@@ -105,7 +113,7 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
                 key={item.id}
                 href={item.url}
                 onClick={(e) => handleClick(e, item.url)}
-                className="block px-6 py-6 text-base uppercase tracking-wide text-gray-900 hover:underline"
+                className="block px-6 py-6 text-base uppercase tracking-wide text-foreground hover:underline"
               >
                 {item.title}
               </a>
@@ -114,13 +122,7 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
         </nav>
       )}
 
-      {/* top haze strip */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 z-20 h-20 w-full backdrop-blur-2xl
-                   [mask-image:linear-gradient(to_bottom,black_65%,rgba(0,0,0,0.88)_75%,transparent_100%)]"
-        style={{ background: "linear-gradient(180deg, rgba(221,226,238,0.35) 0%, rgba(221,226,238,0) 100%)" }}
-      />
+      {/* no extra overlays; keep header transparent to avoid any banding */}
     </header>
   );
 };

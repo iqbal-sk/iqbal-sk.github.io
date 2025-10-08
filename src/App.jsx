@@ -1,27 +1,30 @@
 import React, { useState } from "react";
 import ExperienceProjects from "./components/ExperienceProjects";
-import ContactForm from "./components/ContactForm";
 import Topbar from "./components/Topbar";
 import Hero from "./components/Hero";
 import AboutMe from "./components/AboutMe";
 import Education from "./components/Education";
 import Footer from "./components/Footer";
 import Skills from "./components/Skills";
+import siteConfig from "./siteConfig";
+import PulseSparkline from "./components/PulseSparkline";
+import SubstackHighlights from "./components/SubstackHighlights";
+import { RoleProvider } from "./context/RoleContext";
 
 import { Github, Linkedin, Mail } from "lucide-react";
 
 const App = () => {
   const links = [
     {
-      href: "https://www.linkedin.com/in/aisha-salimgereyeva/",
+      href: "https://www.linkedin.com/in/iqbal-sk/",
       icon: Linkedin,
     },
     {
-      href: "mailto:aishasalimg@gmail.com",
+      href: "mailto:mahammad@buffalo.edu",
       icon: Mail,
     },
     {
-      href: "https://github.com/aishasalim",
+      href: "https://github.com/iqbal-sk",
       icon: Github,
     },
   ];
@@ -70,22 +73,24 @@ const App = () => {
   };
 
   return (
-    <>
+    <RoleProvider>
       <div className="bg-surface text-foreground">
         <Topbar
           handleClick={handleClick}
           openNavigation={openNavigation}
           toggleNavigation={toggleNavigation}
         />
-        <Hero />
-        <AboutMe links={links} />
-
+        <Hero dense={siteConfig.heroDense} />
+        <AboutMe compact={siteConfig.aboutCompact} links={links} />
+        <PulseSparkline days={30} microcopy="30-day pulse: shipped iterations." />
         <ExperienceProjects />
+        <SubstackHighlights />
+        <Skills />
         <Education />
-        <ContactForm />
+        {false}
         <Footer links={links} />
       </div>
-    </>
+    </RoleProvider>
   );
 };
 

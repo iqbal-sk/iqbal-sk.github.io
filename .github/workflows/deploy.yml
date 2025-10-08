@@ -2,36 +2,59 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *' # daily rebuild for fresh pulse
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install deps
+        run: npm ci
 
-      - name: Build the project
+      - name: Fetch dynamic content (pulse + substack)
+        run: |
+          npm run prebuild || true
+        env:
+          # Secure: injected from Actions secrets; never shipped to client
+          PULSE_GITHUB_TOKEN: ${{ secrets.PULSE_GITHUB_TOKEN }}
+          # Use repo owner by default
+          PULSE_GITHUB_USERNAME: ${{ github.repository_owner }}
+
+      - name: Build site
         run: npm run build
 
-      - name: Deploy to GitHub Pages
-        run: |
-          cd dist
-          git init
-          git config user.name 'github-actions'
-          git config user.email 'github-actions@github.com'
-          git add .
-          git commit -m 'Deploy'
-          git push -f https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/aishasalim/aishasalim.github.io.git master:gh-pages
-        env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

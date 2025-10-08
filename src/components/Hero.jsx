@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import CalendlyButton from "./CalendlyButton";
+import siteConfig from "../siteConfig";
 
 /* --- visibility hook --- */
 function useOnScreen(ref, rootMargin = "0px") {
@@ -62,13 +64,14 @@ function useRafTween(active, { duration = 900, easing = DEFAULT_EASING } = {}) {
   return p;
 }
 
-const Hero = ({ title, subtitle, className = "" }) => {
-  const line1 = typeof title === "string" ? title : "More than just a";
-  const line2 = "vibecoder✨";
+const Hero = ({ title, subtitle, className = "", dense = false }) => {
+  const line1 =
+    "Building software that learns — and helps people do the same.";
+  const line2 = ""; // no second line for the new hero
 
   const { out: typed1, done: done1 } = useTypewriter(line1, {
     speed: 65,
-    start: true,
+    start: false, // render immediately (no typing animation)
   });
 
   // track first time both: typed is done AND line1 is on screen
@@ -87,10 +90,18 @@ const Hero = ({ title, subtitle, className = "" }) => {
 
   const s =
     subtitle ??
-    "I'm Aisha from Houston. I can do full stack. I can do AI and ML.";
+    "From backend systems to large language models, I love shaping ideas that grow smarter over time.";
 
   // animate line2 reveal when `revealed` becomes true
   const reveal = useRafTween(revealed, { duration: 900 });
+
+  const headlineSize = dense
+    ? "text-[40px] leading-tight md:text-[56px] lg:text-[72px]"
+    : "text-[44px] leading-tight md:text-[64px] lg:text-[80px]";
+
+  const padY = dense
+    ? "pt-20 md:pt-28 lg:pt-32 pb-16"
+    : "pt-28 md:pt-36 lg:pt-44 pb-28";
 
   return (
     <section
@@ -142,21 +153,10 @@ const Hero = ({ title, subtitle, className = "" }) => {
         />
       </div>
 
-      {/* top dispersion haze (single, no dark alt) */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 z-10 inset-x-0 w-full h-20 backdrop-blur-2xl opacity-60
-                   [mask-image:linear-gradient(to_bottom,black_55%,transparent_100%)]"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(221,226,238,0.22) 0%, rgba(221,226,238,0.00) 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, black 55%, transparent 100%)",
-        }}
-      />
+      {/* removed top haze here to avoid visible band under the header; header provides its own glass gradient */}
 
       {/* Pull content closer to top: was py-40/52/60; now tighter */}
-      <div className="pt-28 md:pt-36 lg:pt-44 pb-28 bg-transparent">
+      <div className={`${padY} bg-transparent`}>
         <div className="relative mx-auto max-w-7xl px-5 md:px-8">
           <div className="mx-auto max-w-[36rem] lg:max-w-[42rem]">
             {/* Headline */}
@@ -164,7 +164,7 @@ const Hero = ({ title, subtitle, className = "" }) => {
               className="
               relative z-10 flex flex-col
               font-semibold tracking-[-0.02em]
-              text-[44px] leading-tight md:text-[64px] lg:text-[80px]
+              ${headlineSize}
               text-transparent bg-clip-text
               bg-[linear-gradient(183deg,rgba(236,241,253,0)_13.9%,rgba(236,241,253,0.30)_121.71%),linear-gradient(0deg,#2E3038,#2E3038)]"
             >
@@ -173,17 +173,7 @@ const Hero = ({ title, subtitle, className = "" }) => {
                 {typed1}
               </span>
 
-              {/* Second line with fade-in */}
-              <span
-                className="whitespace-nowrap -mt-1 md:-mt-2 lg:-mt-3 transition-opacity duration-700 ease-out text-[#33373f]"
-                style={{
-                  opacity: reveal,
-                  transform: `translateY(${(1 - reveal) * 6}px)`,
-                  willChange: "opacity, transform",
-                }}
-              >
-                {line2}
-              </span>
+              {/* No second line in new hero */}
             </h1>
             {/* Subtitle */}
             <p
@@ -196,66 +186,7 @@ const Hero = ({ title, subtitle, className = "" }) => {
               {s}
             </p>
 
-            {/* CTAs: Resume + Contact */}
-            <div className="mt-6 lg:mt-7 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
-              <a
-                href="https://drive.google.com/file/d/1ggP2ti4LYCgZbsDnE6dR7PWTJVvFE1vs/view"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative inline-flex items-center justify-center h-11 lg:h-12 rounded-xl px-6 lg:px-7 text-sm lg:text-base font-semibold leading-none text-white transition-all duration-300 ease-out bg-gradient-to-br from-slate-800 via-slate-300 via-slate-400 via-slate-500 to-slate-700 hover:from-slate-600 hover:via-slate-500 hover:via-slate-400 hover:via-slate-300 hover:to-slate-500 shadow-lg shadow-slate-100/25 hover:shadow-xl hover:shadow-slate-100/40 hover:scale-[1.02] active:scale-[0.98] before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-br before:from-white/20 before:via-white/10 before:via-transparent before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  {" "}
-                  Resume
-                  <svg
-                    className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </span>
-              </a>
-
-              <a
-                href="#contact"
-                className="group relative inline-flex items-center justify-center 
-                           h-11 lg:h-12 rounded-xl px-6 lg:px-7
-                           text-sm lg:text-base font-semibold leading-none text-slate-700
-                           transition-all duration-300 ease-out
-                           bg-gradient-to-br from-white/90 via-white/80 via-white/70 to-white/60
-                           backdrop-blur-sm border border-slate-200/60
-                           hover:from-white/95 hover:via-white/85 hover:via-white/75 hover:to-white/65
-                           hover:border-slate-300/80 hover:scale-[1.02] active:scale-[0.98]
-                           shadow-sm hover:shadow-md
-                           before:absolute before:inset-0 before:rounded-xl
-                           before:bg-gradient-to-br before:from-slate-100/60 before:via-slate-50/40 before:via-transparent before:to-transparent
-                           before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300"
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  Contact
-                  <svg
-                    className="w-4 h-4 transition-transform duration-300 group-hover:scale-110"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                </span>
-              </a>
-            </div>
+            {/* CTAs removed per new concise hero */}
           </div>
         </div>
       </div>

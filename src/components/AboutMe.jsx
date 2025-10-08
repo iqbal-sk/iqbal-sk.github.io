@@ -1,13 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import CalendlyButton from "./CalendlyButton";
+import siteConfig from "../siteConfig";
+import { Linkedin as LinkedinIcon } from "lucide-react";
 import { Minus, Square, X } from "lucide-react";
-import imageUrl from "../assets/self-img.png";
-const AboutMe = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showContent, setShowContent] = useState(false);
+// Prefer a public image if provided; fallback to bundled placeholder
+const imageUrl = "/profile.jpg";
+const AboutMe = ({ compact = false }) => {
+  // In compact mode, content should be expanded immediately
+  const [isExpanded, setIsExpanded] = useState(compact ? true : false);
+  const [showContent, setShowContent] = useState(compact ? true : false);
+
+  // Compact tuning: slightly reduce paddings, gaps, and font sizes
+  const sectionPad = compact ? "pt-16 pb-10" : "min-h-screen pt-20";
+  const wrapperPad = compact ? "p-4 space-y-4" : "p-6 space-y-6";
+  const profileGap = compact ? "gap-4" : "gap-6";
+  const paraText = compact
+    ? "mb-3 text-[16px] leading-7 text-[#33373f]"
+    : "mb-4 text-[18px] leading-7 text-[#33373f]";
+  const imgMax = compact ? "max-w-xs" : "max-w-sm";
+  const imgWidth = compact ? "w-[80%]" : "w-full";
 
   useEffect(() => {
+    if (compact) return; // no scroll behavior in compact mode
     const handleScroll = () => {
       const scrollY = window.scrollY;
       if (scrollY > 100 && !isExpanded) {
@@ -18,13 +34,12 @@ const AboutMe = () => {
         setTimeout(() => setIsExpanded(false), 300);
       }
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isExpanded]);
+  }, [isExpanded, compact]);
 
   return (
-    <section id="about" className="min-h-screen pt-20 px-4">
+    <section id="about" className={`${sectionPad} px-4`}>
       <div className="max-w-5xl mx-auto">
         <div className="bg-gradient-to-br from-[#f8fafc]/90 via-[#e2e8f0]/80 to-[#f1f5f9]/90 backdrop-blur-xl rounded-xl border border-[#cbd5e1]/30 shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-[#f8fafc]/95 via-[#e2e8f0]/90 to-[#cbd5e1]/85 backdrop-blur-sm px-4 py-3 border-b border-[#94a3b8]/20 flex items-center justify-between">
@@ -49,7 +64,7 @@ const AboutMe = () => {
             <div></div> {/* Spacer for flexbox */}
           </div>
 
-          <div className="p-6 space-y-6 bg-gradient-to-br from-[#e8f2ff]/30 via-[#d1e7fe]/20 to-[#c7d2fe]/25">
+          <div className={`${wrapperPad} bg-gradient-to-br from-[#e8f2ff]/30 via-[#d1e7fe]/20 to-[#c7d2fe]/25`}>
             {/* User Message */}
             <div className="flex justify-end">
               <div className="flex items-start space-x-3 max-w-xs">
@@ -68,10 +83,14 @@ const AboutMe = () => {
                     transition-all duration-700 ease-out overflow-hidden
                     ${isExpanded ? "max-w-full" : "max-w-md"}
                   `}
-                  style={{
-                    height: isExpanded ? "auto" : "60px",
-                    minHeight: isExpanded ? "400px" : "60px",
-                  }}
+                  style={
+                    compact
+                      ? undefined
+                      : {
+                          height: isExpanded ? "auto" : "60px",
+                          minHeight: isExpanded ? "400px" : "60px",
+                        }
+                  }
                 >
                   {/* Expanded Content */}
                   {isExpanded && (
@@ -84,41 +103,29 @@ const AboutMe = () => {
 
                       <div className="relative z-10 space-y-6">
                         {/* Profile Section */}
-                        <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className={`flex flex-col md:flex-row items-center ${profileGap}`}>
                           <div className="md:w-1/2 space-y-4">
                             <div className="space-y-3 text-sm text-[#33373f] leading-relaxed">
-                              <p className="mb-4 text-[18px] leading-7 text-[#33373f]">
-                                Howdy! I am Aisha from Houston, and I am a Texas
-                                A&M student pursuing a bachelor's degree in
-                                Computer Engineering. I enjoy full‑stack dev and
-                                Machine Learning.
+                              <p className={"" + paraText}>
+                                Hey — I’m Iqbal! I love shipping AI + backend products that make people’s work sharper and faster. I’m the kind of builder who prototypes quickly, measures impact, then iterates till it feels right.
                               </p>
-                              <p className="mb-4 text-[18px] leading-7 text-[#33373f]">
-                                I am only starting my professional career and
-                                I'm detail‑oriented and strive for perfection in
-                                everything I do. Follow me to track my journey!
+                              <p className={"" + paraText}>
+                                I’m always up to chat about interesting problems, researchy ideas, or roles where I can own real outcomes. If you’re hiring, building, or just curious — let’s connect.
                               </p>
-                              <p className="mb-6 text-[18px] leading-7 text-[#33373f]">
-                                Feel free to reach out to me on{" "}
+                              <div className="mt-4 flex flex-wrap items-center gap-3">
+                                {siteConfig.calendlyUrl && (
+                                  <CalendlyButton url={siteConfig.calendlyUrl} label={siteConfig.calendlyLabel || 'Quick chat'} />
+                                )}
                                 <a
-                                  href="https://www.linkedin.com/in/aisha-salimgereyeva/"
+                                  href="https://www.linkedin.com/in/iqbal-sk/"
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="relative font-semibold text-[#9fb8e3] hover:text-[#b8d4f1] transition-colors after:absolute after:-left-0.5 after:-z-10 after:h-6.5 after:w-[calc(100%+4px)] after:rounded after:bg-[#e8f2ff]/40 after:bg-[linear-gradient(97.76deg,rgba(232,242,255,0)_22.19%,rgba(209,231,254,0.5)_34.41%,rgba(232,242,255,0)_46.04%,rgba(199,210,254,0.3)_76.95%,rgba(209,231,254,0.5)_99.7%)]"
+                                  className="inline-flex items-center gap-2 h-10 rounded-lg px-3 text-sm font-medium text-[#0E1116] bg-white border border-[#cbd5e1] hover:bg-[#f8fafc]"
                                 >
-                                  LinkedIn
+                                  <LinkedinIcon className="h-4 w-4" />
+                                  Connect on LinkedIn
                                 </a>
-                                , or check out my work on{" "}
-                                <a
-                                  href="https://github.com/aishasalim"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="relative font-semibold text-[#9fb8e3] hover:text-[#b8d4f1] transition-colors after:absolute after:-left-0.5 after:-z-10 after:h-6.5 after:w-[calc(100%+4px)] after:rounded after:bg-[#e8f2ff]/40 after:bg-[linear-gradient(97.76deg,rgba(232,242,255,0)_22.19%,rgba(209,231,254,0.5)_34.41%,rgba(232,242,255,0)_46.04%,rgba(199,210,254,0.3)_76.95%,rgba(209,231,254,0.5)_99.7%)]"
-                                >
-                                  GitHub
-                                </a>{" "}
-                                !
-                              </p>
+                              </div>
                             </div>
                           </div>
 
@@ -127,8 +134,10 @@ const AboutMe = () => {
                               <div className="absolute inset-0 bg-gradient-to-br from-[#b8d4f1]/30 via-[#c7d2fe]/20 to-[#9fb8e3]/25 rounded-xl blur-lg"></div>
                               <img
                                 src={imageUrl}
-                                alt="Aisha's picture"
-                                className="rounded-[20px] w-full max-w-sm shadow-lg relative z-10"
+                                alt="Iqbal's picture"
+                                className={`rounded-[20px] ${imgWidth} ${imgMax} shadow-lg relative z-10 object-cover`}
+                                loading="lazy"
+                                decoding="async"
                               />
                             </div>
                           </div>
@@ -141,7 +150,7 @@ const AboutMe = () => {
             </div>
           </div>
 
-          {!isExpanded && (
+          {!isExpanded && !compact && (
             <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
               <div className="bg-gradient-to-r from-[#f8fafc]/80 to-[#e2e8f0]/80 backdrop-blur-sm px-4 py-2 rounded-full border border-[#cbd5e1]/40 shadow-lg">
                 <p className="text-xs text-[#94a3b8] font-medium">

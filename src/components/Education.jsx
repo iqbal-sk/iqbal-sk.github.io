@@ -2,24 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 
 const educationData = [
   {
-    degree: "BS Computer Engineering",
-    school: "Texas A&M University, College Station, TX",
-    date: "2025 - 2028",
-    details: [
-      "Grade: Highest Honors (4.0)",
-      "Activities and societies: President, Philosophy Club Northwest",
-      "Honors/Dean's List: Spring 23, Summer 23, Fall 23, Spring 24, Fall 24",
-    ],
+    degree: "M.S. in Artificial Intelligence",
+    school: "University at Buffalo (SUNY), Buffalo, NY",
+    date: "Aug 2023 – Jan 2025",
+    details: ["CGPA: 3.97"],
+    logo: `${import.meta.env.BASE_URL}ub.png`,
   },
   {
-    degree: "AS Computer Science",
-    school: "Houston Community College, Houston, TX",
-    date: "2023 - 2024",
-    details: [
-      "Grade: Highest Honors (4.0)",
-      "Activities and societies: President, Philosophy Club Northwest",
-      "Honors/Dean's List: Spring 23, Summer 23, Fall 23, Spring 24, Fall 24",
-    ],
+    degree: "B.Tech in Computer Science",
+    school: "Jawaharlal Nehru Technological University, India",
+    date: "Aug 2016 – May 2020",
+    logo: `${import.meta.env.BASE_URL}JNTUK.png`,
   },
 ];
 
@@ -101,13 +94,13 @@ const Education = () => {
 
   return (
     <section
+      id="education"
       ref={(el) => observe(el, "edu-section")}
       className={[
-        "py-10 mb-10 max-w-2xl px-3 mx-auto transition-all duration-700",
+        "py-10 mb-10 max-w-4xl px-3 mx-auto transition-all duration-700",
         visible.has("edu-section")
           ? "opacity-100 translate-y-0"
           : "opacity-0 translate-y-6",
-        "text-gray-800",
         "[@media(prefers-reduced-motion:reduce)]:transition-none",
       ].join(" ")}
     >
@@ -155,23 +148,38 @@ const Education = () => {
               }}
             />
 
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-800">
-                  {education.degree}
-                </h3>
-                <p className="text-lg text-gray-600">{education.school}</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                {education.logo && (
+                  <div className="w-12 h-12 rounded-lg bg-white border border-gray-200 p-1 flex items-center justify-center">
+                    <img
+                      src={education.logo}
+                      alt={`${education.school} logo`}
+                      className="w-10 h-10 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <h3 className="text-2xl font-semibold text-gray-800">
+                    {education.degree}
+                  </h3>
+                  <p className="text-lg text-gray-600 truncate">{education.school}</p>
+                </div>
               </div>
-              <p className="mb-6 text-lg text-gray-500">{education.date}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                {education.details?.find((d)=>/cgpa/i.test(d)) && (
+                  <span className="inline-flex items-center rounded-full border border-gray-300 bg-white px-2 py-0.5 text-xs text-gray-700">
+                    {(() => {
+                      const d = education.details.find((x)=>/cgpa/i.test(x)) || '';
+                      const v = (d.split(':')[1] || d.replace(/cgpa/i,'')).trim();
+                      return `CGPA ${v}`;
+                    })()}
+                  </span>
+                )}
+                <p className="text-sm text-gray-500 whitespace-nowrap">{education.date}</p>
+              </div>
             </div>
-
-            {education.details && (
-              <ul className="mt-4 list-disc list-inside text-gray-700 ">
-                {education.details.map((detail, detailIndex) => (
-                  <li key={detailIndex}>{detail}</li>
-                ))}
-              </ul>
-            )}
           </div>
         ))}
       </div>
