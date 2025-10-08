@@ -311,11 +311,18 @@ const projectData = [
 
 /* -------------------------------- Component ------------------------------- */
 const ExperienceProjects = () => {
-  const [tab, setTab] = useState("experience");
+  const [tab, setTab] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#portfolio') return 'portfolio';
+    return 'experience';
+  });
   const { visibleElements, observeElement } = useScrollAnimation();
   const [skillFilter, setSkillFilter] = useState("");
   const [originEl, setOriginEl] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [modalTop, setModalTop] = useState(24);
+  const [columns, setColumns] = useState(1);
+  const modalRef = useRef(null);
   const originRef = useRef(null);
   originRef.current = originEl ? { current: originEl } : null;
 
@@ -349,6 +356,62 @@ const ExperienceProjects = () => {
     history.replaceState(null, "", targetHash);
     window.dispatchEvent(new HashChangeEvent("hashchange"));
   };
+
+  // Close when clicking outside modal
+  const handleOverlayMouseDown = (e) => {
+    if (modalRef.current && !modalRef.current.contains(e.target)) {
+      setSelectedProject(null);
+      setSelectedIndex(-1);
+    }
+  };
+
+  // Background scroll remains enabled while modal is open (no lock)
+
+  // Track responsive columns to infer the row number (1 col on small, 2 cols on md+)
+  useEffect(() => {
+    const update = () => setColumns((window.innerWidth || 0) >= 768 ? 2 : 1);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  // Compute top offset based on row index: row 0 → 10%, row 1 → 30%, row 2+ → 50%.
+  // Use dynamic max-height so the panel fits below the chosen top without shifting up.
+  useEffect(() => {
+    if (!selectedProject) return;
+    const computeTop = () => {
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      const header = document.querySelector('header');
+      const headerH = header ? header.offsetHeight : 64;
+      const safeTopMin = Math.max(12, headerH + 12);
+      const rowIndex = Math.max(0, Math.floor((columns > 0 ? selectedIndex / columns : selectedIndex)));
+      // Base target: 10% + 20% per row, capped to 50%
+      const targetPct = Math.min(0.1 + 0.2 * rowIndex, 0.5);
+      // Desired top position in pixels, clamped to leave at least ~120px for content
+      const desiredTop = Math.round(vh * targetPct);
+      const topUpper = Math.max(safeTopMin, vh - 120);
+      const top = Math.max(safeTopMin, Math.min(desiredTop, topUpper));
+      setModalTop(top);
+    };
+    const id = requestAnimationFrame(computeTop);
+    const id2 = requestAnimationFrame(computeTop);
+    window.addEventListener('resize', computeTop);
+    return () => {
+      cancelAnimationFrame(id);
+      cancelAnimationFrame(id2);
+      window.removeEventListener('resize', computeTop);
+    };
+  }, [selectedProject, selectedIndex, columns]);
+
+  // No ResizeObserver recalculation needed for row-based positioning
+
+  // Close on Escape for better UX
+  useEffect(() => {
+    if (!selectedProject) return;
+    const onKey = (e) => { if (e.key === 'Escape') { setSelectedProject(null); setSelectedIndex(-1); } };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedProject]);
 
   // Role is shown for tone, but do not hide projects by role
   const { role: activeRole } = useRole();
@@ -418,7 +481,7 @@ const ExperienceProjects = () => {
                     key={index}
                     ref={(el) => observeElement(el, `experience-${index}`)}
                     className={`transition-all duration-700 ${
-                      visibleElements.has(`experience-${index}`)
+                      visibleElements.has('experience-' + index)
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-12"
                     }`}
@@ -520,28 +583,29 @@ const ExperienceProjects = () => {
                   return (tag.match || []).some((m) => skills.includes(String(m).toLowerCase()));
                 })
               ).map((project, index) => (
-                <article
-                  key={index}
-                  ref={(el) => observeElement(el, `project-${index}`)}
-                  className={`mb-6 transition-all duration-700 ${
-                    visibleElements.has('project-' + index)
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-12"
-                  }`}
-                  style={{ transitionDelay: `${index * 120 + 300}ms` }}
-                >
-                  <div
-                    className="group relative overflow-hidden rounded-xl border border-border bg-card hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/60 h-full flex flex-col"
-                    onClick={() => setSelectedProject(project)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedProject(project);
-                      }
-                    }}
+                <React.Fragment key={index}>
+                  <article
+                    ref={(el) => observeElement(el, 'project-' + index)}
+                    className={`mb-6 transition-all duration-700 ${
+                      visibleElements.has('project-' + index)
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-12"
+                    }`}
+                    style={{ transitionDelay: `${index * 120 + 300}ms` }}
                   >
+                    <div
+                      className="group relative overflow-hidden rounded-xl border border-border bg-card hover:shadow-md transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/60 h-full flex flex-col"
+                      onClick={() => { setSelectedProject(project); setSelectedIndex(index); }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedProject(project);
+                          setSelectedIndex(index);
+                        }
+                      }}
+                    >
                     {/* Thumbnail (3:2) with hover swap */}
                     {project.visual && (
                       <div className="relative w-full aspect-[21/9] bg-muted/40">
@@ -631,130 +695,126 @@ const ExperienceProjects = () => {
                         )}
                       </div>
                     </div>
-                  </div>
-                </article>
+                    </div>
+                  </article>
+
+                  {false}
+                </React.Fragment>
               ))}
               </div>
             </div>
           </div>
         )}
-        
-      </div>
 
-      {/* Case Study Detail Overlay */}
-      {selectedProject && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 md:p-6">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedProject(null)} />
-          <div className="relative z-10 w-full max-w-[960px]">
-            <div className="rounded-2xl border border-border bg-background/95 supports-[backdrop-filter]:backdrop-blur-xl p-4 md:p-5 max-h-[85vh] overflow-auto">
-              {/* Title row */}
-              <div className="grid grid-cols-12 gap-3 items-start">
-                <div className="col-span-12 md:col-span-8">
-                  <h2 className="text-lg md:text-xl font-bold text-foreground">{selectedProject.title}</h2>
-                  {(selectedProject.oneLiner || selectedProject.summary) && (
-                    <p className="mt-1.5 text-sm text-muted-foreground">{selectedProject.oneLiner || selectedProject.summary}</p>
-                  )}
-                </div>
-                <div className="col-span-12 md:col-span-4 flex md:justify-end gap-2 mt-2 md:mt-0">
-                  <button
-                    onClick={() => {
-                      const url = window.location.href;
-                      if (navigator.share) {
-                        navigator.share({ title: selectedProject.title, url }).catch(() => {});
-                      } else if (navigator.clipboard) {
-                        navigator.clipboard.writeText(url).catch(() => {});
-                      }
-                    }}
-                    className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium bg-muted text-foreground/90 border border-border hover:bg-muted/80"
-                  >
-                    Share
-                  </button>
-                  {((selectedProject.actions && selectedProject.actions[0]) || (selectedProject.githubLink ? { label: 'Open Repo', href: selectedProject.githubLink } : null)) && (
-                    <a
-                      href={(selectedProject.actions && selectedProject.actions[0]?.href) || selectedProject.githubLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground border border-primary hover:brightness-110"
-                    >
-                      {(selectedProject.actions && selectedProject.actions[0]?.label) || 'Open Repo'}
-                    </a>
-                  )}
-                  <button onClick={() => setSelectedProject(null)} className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium bg-muted text-foreground/90 border border-border hover:bg-muted/80">Close</button>
-                </div>
-              </div>
-
-              <hr className="my-4 border-border" />
-
-              {/* Hero visual (compact) */}
-              {selectedProject.visual && (
-                <div className="w-full">
-                  <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden rounded-xl border border-border bg-muted/30">
-                    <img src={selectedProject.visual.src} alt={selectedProject.visual.alt || selectedProject.title} className="absolute inset-0 h-full w-full object-contain" />
+        {/* Floating Case Study Modal with dynamic top offset */}
+        {selectedProject && (
+          <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" onMouseDown={handleOverlayMouseDown}>
+            <div className="absolute inset-0 bg-black/50" />
+            <div className="absolute inset-x-0" style={{ top: modalTop }}>
+              <div className="px-3 md:px-6 flex justify-center">
+                <div
+                  ref={modalRef}
+                  className="w-full max-w-[960px] rounded-2xl border border-border bg-background/95 supports-[backdrop-filter]:backdrop-blur-xl p-4 md:p-5 shadow-xl overflow-auto"
+                  style={{ maxHeight: `calc(100vh - ${modalTop + 16}px)` }}
+                  tabIndex={-1}
+                >
+                  {/* Title row */}
+                  <div className="grid grid-cols-12 gap-3 items-start">
+                    <div className="col-span-12 md:col-span-8">
+                      <h2 className="text-lg md:text-xl font-bold text-foreground">{selectedProject.title}</h2>
+                      {(selectedProject.oneLiner || selectedProject.summary) && (
+                        <p className="mt-1.5 text-sm text-muted-foreground">{selectedProject.oneLiner || selectedProject.summary}</p>
+                      )}
+                    </div>
+                    <div className="col-span-12 md:col-span-4 flex md:justify-end gap-2 mt-2 md:mt-0">
+                      {((selectedProject.actions && selectedProject.actions[0]) || (selectedProject.githubLink ? { label: 'Open Repo', href: selectedProject.githubLink } : null)) && (
+                        <a
+                          href={(selectedProject.actions && selectedProject.actions[0]?.href) || selectedProject.githubLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground border border-primary hover:brightness-110"
+                        >
+                          {(selectedProject.actions && selectedProject.actions[0]?.label) || 'Open Repo'}
+                        </a>
+                      )}
+                      <button onClick={() => { setSelectedProject(null); setSelectedIndex(-1); }} className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium bg-muted text-foreground/90 border border-border hover:bg-muted/80">Close</button>
+                    </div>
                   </div>
-                  {selectedProject.visual.caption && (
-                    <p className="text-center text-xs text-muted-foreground mt-2">{selectedProject.visual.caption}</p>
-                  )}
-                </div>
-              )}
 
-              {/* Main grid: 12 cols */}
-              <div className="mt-4 grid grid-cols-12 gap-4">
-                {/* Left: 8 cols */}
-                <div className="col-span-12 md:col-span-8 max-w-prose">
-                  {(selectedProject.sections || []).map((s, i) => (
-                    <section key={i} className="mb-4">
-                      <h3 className="text-base font-semibold text-foreground">{i + 1}. {s.title}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{s.body}</p>
-                    </section>
-                  ))}
+                  <hr className="my-4 border-border" />
 
-                  {/* Proof strip removed per request */}
-                </div>
-
-                {/* Right: 4 cols sticky rail */}
-                <aside className="col-span-12 md:col-span-4 self-start">
-                  <div className="rounded-xl border border-border bg-card p-3">
-                    <h4 className="text-sm font-semibold text-foreground">Result</h4>
-                    {selectedProject.stats && selectedProject.stats.length > 0 ? (
-                      <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
-                        {selectedProject.stats.map((s, i) => (<li key={i}>• {s}</li>))}
-                      </ul>
-                    ) : (
-                      <p className="mt-1 text-sm text-muted-foreground">See repository for details</p>
-                    )}
-
-                    {selectedProject.scale && (
-                      <div className="mt-3">
-                        <h4 className="text-sm font-semibold text-foreground">Scale</h4>
-                        <p className="mt-1 text-sm text-muted-foreground">{selectedProject.scale}</p>
+                  {/* Hero visual (compact) */}
+                  {selectedProject.visual && (
+                    <div className="w-full">
+                      <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden rounded-xl border border-border bg-muted/30">
+                        <img src={selectedProject.visual.src} alt={selectedProject.visual.alt || selectedProject.title} className="absolute inset-0 h-full w-full object-contain" />
                       </div>
-                    )}
+                      {selectedProject.visual.caption && (
+                        <p className="text-center text-xs text-muted-foreground mt-2">{selectedProject.visual.caption}</p>
+                      )}
+                    </div>
+                  )}
 
-                    <div className="mt-3">
-                      <h4 className="text-sm font-semibold text-foreground">Scope</h4>
-                      <p className="mt-1 text-sm text-muted-foreground">{selectedProject.scope || 'Owner — end‑to‑end implementation'}</p>
+                  {/* Main grid: 12 cols */}
+                  <div className="mt-4 grid grid-cols-12 gap-4">
+                    {/* Left: 8 cols */}
+                    <div className="col-span-12 md:col-span-8 max-w-prose">
+                      {(selectedProject.sections || []).map((s, i) => (
+                        <section key={i} className="mb-4">
+                          <h3 className="text-base font-semibold text-foreground">{i + 1}. {s.title}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">{s.body}</p>
+                        </section>
+                      ))}
                     </div>
 
-                    <div className="mt-3">
-                      <h4 className="text-sm font-semibold text-foreground">Links</h4>
-                      <div className="mt-1 flex flex-wrap gap-3 text-xs">
-                        {selectedProject.actions && selectedProject.actions.map((a, i) => (
-                          <a key={i} href={a.href} target="_blank" rel="noopener noreferrer" className="text-foreground/90 underline underline-offset-2 hover:text-foreground">
-                            {a.label}
-                          </a>
-                        ))}
-                        {selectedProject.githubLink && (!selectedProject.actions || !selectedProject.actions.length) && (
-                          <a href={selectedProject.githubLink} target="_blank" rel="noopener noreferrer" className="text-foreground/90 underline underline-offset-2 hover:text-foreground">Repo</a>
+                    {/* Right: 4 cols sticky rail */}
+                    <aside className="col-span-12 md:col-span-4 self-start">
+                      <div className="rounded-xl border border-border bg-card p-3">
+                        <h4 className="text-sm font-semibold text-foreground">Result</h4>
+                        {selectedProject.stats && selectedProject.stats.length > 0 ? (
+                          <ul className="mt-1 space-y-1 text-sm text-muted-foreground">
+                            {selectedProject.stats.map((s, i) => (<li key={i}>• {s}</li>))}
+                          </ul>
+                        ) : (
+                          <p className="mt-1 text-sm text-muted-foreground">See repository for details</p>
                         )}
+
+                        {selectedProject.scale && (
+                          <div className="mt-3">
+                            <h4 className="text-sm font-semibold text-foreground">Scale</h4>
+                            <p className="mt-1 text-sm text-muted-foreground">{selectedProject.scale}</p>
+                          </div>
+                        )}
+
+                        <div className="mt-3">
+                          <h4 className="text-sm font-semibold text-foreground">Scope</h4>
+                          <p className="mt-1 text-sm text-muted-foreground">{selectedProject.scope || 'Owner — end‑to‑end implementation'}</p>
+                        </div>
+
+                        <div className="mt-3">
+                          <h4 className="text-sm font-semibold text-foreground">Links</h4>
+                          <div className="mt-1 flex flex-wrap gap-3 text-xs">
+                            {selectedProject.actions && selectedProject.actions.map((a, i) => (
+                              <a key={i} href={a.href} target="_blank" rel="noopener noreferrer" className="text-foreground/90 underline underline-offset-2 hover:text-foreground">
+                                {a.label}
+                              </a>
+                            ))}
+                            {selectedProject.githubLink && (!selectedProject.actions || !selectedProject.actions.length) && (
+                              <a href={selectedProject.githubLink} target="_blank" rel="noopener noreferrer" className="text-foreground/90 underline underline-offset-2 hover:text-foreground">Repo</a>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </aside>
                   </div>
-                </aside>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
+
 
     </section>
   );
