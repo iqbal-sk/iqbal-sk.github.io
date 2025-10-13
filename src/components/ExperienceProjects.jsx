@@ -207,7 +207,7 @@ const projectData = [
     title: "Kafka Wire Protocol — Python Implementation",
     summary:
       "From‑scratch Kafka client/server that speaks the official wire protocol — request/response framing, CRC, and a minimal broker loop supporting Produce/Fetch + Metadata.",
-    githubLink: "https://github.com/iqbal-sk",
+    githubLink: "https://github.com/iqbal-sk/kafka-python",
     hostingLink: null,
     visual: {
       src: "/Kafka.png",
@@ -220,7 +220,7 @@ const projectData = [
     scale: "1 partition; 1 KB batch size",
     scope: "Owner — request parser, broker loop",
     actions: [
-      { label: "Open Repo", href: "https://github.com/iqbal-sk" },
+      { label: "Open Repo", href: "https://github.com/iqbal-sk/kafka-python" },
       // { label: "Open Bench", href: "#" },
       // { label: "Open PCAP", href: "#" },
     ],
@@ -269,7 +269,7 @@ const projectData = [
     title: "Redis-Compatible Server — C",
     summary:
       "Work‑in‑progress Redis‑compatible server in C. RESP parser, non‑blocking event loop, in‑memory store; supports PING/ECHO/SET/GET with TTL scaffolding.",
-    githubLink: "https://github.com/iqbal-sk",
+    githubLink: "https://github.com/iqbal-sk/redis-c",
     hostingLink: null,
     sections: [
       { title: "Why I Built It Myself", body: "Learn event loops, non‑blocking I/O, and memory management by implementing a real protocol in C." },
