@@ -22,10 +22,13 @@ const Topbar = ({ handleClick, openNavigation, toggleNavigation }) => {
     { id: 1, title: "Home", url: "#hero" },
     { id: 2, title: "About", url: "#about" },
     { id: 3, title: "Portfolio", url: "#portfolio" },
+    siteConfig?.substack?.home
+      ? { id: 4, title: "Substack", url: siteConfig.substack.home }
+      : null,
     { id: 6, title: "Skills", url: "#skills" },
     { id: 5, title: "Experience", url: "#experience" },
     // Keep core anchors only; hide external Github from topbar for now
-  ];
+  ].filter(Boolean);
 
 
   // Lock scroll only for mobile overlay
