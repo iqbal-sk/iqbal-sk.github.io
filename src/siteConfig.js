@@ -27,7 +27,7 @@ export default {
   substack: {
     feedUrl: 'https://mlwithiqbal.substack.com/feed', // e.g., 'https://yourname.substack.com/feed'
     home: 'https://mlwithiqbal.substack.com/',
-    maxPosts: 2,
+    maxPosts: 3,
     title: 'Where I Think Out Loud',
     tagline: 'I document what I learn while building — experiments, design notes, and the philosophy of iteration.',
     cta: { label: 'Read more on Substack', href: '' },
