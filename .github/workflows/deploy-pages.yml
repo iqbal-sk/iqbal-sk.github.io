@@ -1,11 +1,12 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy Pages
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: '17 5 * * *' # daily rebuild for fresh pulse
+    # 05:00 UTC ≈ 12:00 AM ET (standard time); ≈ 1:00 AM ET (daylight)
+    - cron: "0 5 * * *"
 
 permissions:
   contents: read
@@ -13,8 +14,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -23,38 +24,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
 
-      - name: Fetch dynamic content (pulse + substack)
-        run: |
-          npm run prebuild || true
+      - name: Build site (includes prebuild fetch of Substack + Pulse)
         env:
-          # Secure: injected from Actions secrets; never shipped to client
+          # Optional: provide to refresh GitHub pulse during build
           PULSE_GITHUB_TOKEN: ${{ secrets.PULSE_GITHUB_TOKEN }}
-          # Use repo owner by default
-          PULSE_GITHUB_USERNAME: ${{ github.repository_owner }}
-
-      - name: Build site
         run: npm run build
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ./dist
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to Pages
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
