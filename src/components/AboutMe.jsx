@@ -107,11 +107,14 @@ const AboutMe = ({ compact = false }) => {
                           <div className="md:w-1/2 space-y-4">
                             <div className="space-y-3 text-sm text-[#33373f] leading-relaxed">
                               <p className={"" + paraText}>
-                                Hey — I’m Iqbal! I love shipping AI + backend products that make people’s work sharper and faster. I’m the kind of builder who prototypes quickly, measures impact, then iterates till it feels right.
+                                Hi, I’m Iqbal. I love taking ideas that sound slightly impossible and nudging them into reality with code. I’m happiest when I’m deep in a system — tracing why something works (or doesn’t), connecting small details to big design decisions.
                               </p>
                               <p className={"" + paraText}>
-                                I’m always up to chat about interesting problems, researchy ideas, or roles where I can own real outcomes. If you’re hiring, building, or just curious — let’s connect.
+                                I’ve bounced between research, engineering, and a bit of teaching — which taught me that good tech isn’t just about performance; it’s about clarity, empathy, and usefulneess.
                               </p>
+                              {/*<p className={"" + paraText}>*/}
+                              {/*  If a product makes someone’s day smoother, that’s real impact to me — and the best kind of engineering happens when it feels collaborative, not transactional. I love working on AI and backend systems that make tech a little more human — and if that excites you too, let’s chat.*/}
+                              {/*</p>*/}
                               <div className="mt-4 flex flex-wrap items-center gap-3">
                                 {siteConfig.calendlyUrl && (
                                   <CalendlyButton url={siteConfig.calendlyUrl} label={siteConfig.calendlyLabel || 'Quick chat'} />
