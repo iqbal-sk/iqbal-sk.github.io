@@ -35,16 +35,48 @@ function parseRss(xmlText, max = 2) {
   return items;
 }
 
-try {
-  const res = await fetch(feedUrl);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const text = await res.text();
-  const items = parseRss(text, maxPosts);
+async function fetchWithHeaders(url) {
+  // Mimic a browser to avoid feed blocking by some CDNs
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+    'Accept': 'application/rss+xml, application/xml;q=0.9, */*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Cache-Control': 'no-cache',
+  };
+  // Best-effort referer
+  try { headers['Referer'] = new URL(url).origin + '/'; } catch {}
+  return fetch(url, { headers });
+}
+
+async function writeItems(items) {
   const outDir = path.join(process.cwd(), 'public');
   await fs.mkdir(outDir, { recursive: true });
   await fs.writeFile(path.join(outDir, 'substack.json'), JSON.stringify(items, null, 2));
   console.log(`[fetch-substack] Wrote ${items.length} posts to public/substack.json`);
+}
+
+try {
+  let res = await fetchWithHeaders(feedUrl);
+  if (!res.ok) {
+    // Fallback: try via r.jina.ai simple fetch proxy (read-only) to bypass feed blocking
+    const proxied = `https://r.jina.ai/http://${new URL(feedUrl).host}/feed`;
+    console.warn(`[fetch-substack] Primary fetch failed (HTTP ${res.status}). Trying proxy: ${proxied}`);
+    res = await fetchWithHeaders(proxied);
+  }
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  const items = parseRss(text, maxPosts);
+  await writeItems(items);
 } catch (e) {
   console.warn('[fetch-substack] Failed to fetch feed:', e.message);
-  // Write empty file so client fetch 404/empty gracefully
+  // Preserve previous substack.json if present so deploys don’t blank out content
+  try {
+    const existing = await fs.readFile(path.join(process.cwd(), 'public', 'substack.json'), 'utf-8');
+    const items = JSON.parse(existing);
+    await writeItems(items);
+    console.log('[fetch-substack] Kept existing substack.json due to fetch failure');
+  } catch {
+    console.warn('[fetch-substack] No existing substack.json to preserve');
+  }
 }
