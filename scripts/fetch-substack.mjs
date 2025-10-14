@@ -55,6 +55,37 @@ async function writeItems(items) {
   console.log(`[fetch-substack] Wrote ${items.length} posts to public/substack.json`);
 }
 
+function stripTags(html) {
+  return String(html || '')
+    .replace(/<!\[CDATA\[|\]\]>/g, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseHomepageForPosts(html, host, max = 3) {
+  const items = [];
+  const linkRe = new RegExp(`https?:\\/\\/${host.replace(/\./g, '\\.') }\/p\/[^"'>]+`, 'g');
+  const seen = new Set();
+  const links = [];
+  let m;
+  while ((m = linkRe.exec(html)) && links.length < max * 2) {
+    const href = m[0];
+    if (!seen.has(href)) { seen.add(href); links.push(href); }
+  }
+  for (const href of links.slice(0, max)) {
+    // Try to capture the anchor text around this href for a title
+    const anchorRe = new RegExp(`<a[^>]+href=["']${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>([\n\r\t\s\S]{0,200}?)<\\/a>`, 'i');
+    const am = html.match(anchorRe);
+    const raw = am ? stripTags(am[1]) : '';
+    const title = raw || 'Read on Substack';
+    items.push({ title, link: href, pubDate: '', description: '', image: '' });
+  }
+  return items;
+}
+
 try {
   let res = await fetchWithHeaders(feedUrl);
   if (!res.ok) {
@@ -70,6 +101,23 @@ try {
   await writeItems(items);
 } catch (e) {
   console.warn('[fetch-substack] Failed to fetch feed:', e.message);
+  // Try homepage via proxy as a last resort (extract recent /p/... links)
+  try {
+    const host = new URL(feedUrl).host;
+    const homeProxy = `https://r.jina.ai/http://${host}/`;
+    const resHome = await fetchWithHeaders(homeProxy);
+    if (!resHome.ok) throw new Error(`home HTTP ${resHome.status}`);
+    const html = await resHome.text();
+    const items = parseHomepageForPosts(html, host, maxPosts);
+    if (items.length) {
+      await writeItems(items);
+      console.log('[fetch-substack] Used homepage fallback via proxy');
+      process.exit(0);
+    }
+  } catch (e2) {
+    console.warn('[fetch-substack] Homepage fallback failed:', e2.message);
+  }
+
   // Preserve previous substack.json if present so deploys don’t blank out content
   try {
     const existing = await fs.readFile(path.join(process.cwd(), 'public', 'substack.json'), 'utf-8');
