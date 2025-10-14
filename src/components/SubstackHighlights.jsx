@@ -55,7 +55,9 @@ export default function SubstackHighlights() {
       setLoaded(false);
       // Try build-time JSON first to avoid CORS
       try {
-        const resJson = await fetch(`${import.meta.env.BASE_URL || ''}substack.json`, { cache: 'no-store' });
+        const base = import.meta.env.BASE_URL || '';
+        const ver = (typeof __BUILD_ID__ !== 'undefined') ? __BUILD_ID__ : '';
+        const resJson = await fetch(`${base}substack.json${ver ? `?v=${ver}` : ''}`, { cache: 'no-store' });
         if (resJson.ok) {
           const j = await resJson.json();
           if (!cancelled) { setPosts(j.slice(0, maxPosts)); setLoaded(true); return; }
