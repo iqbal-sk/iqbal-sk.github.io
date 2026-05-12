@@ -3,7 +3,7 @@ import { Github, Linkedin, Mail } from 'lucide-react';
 
 import Topbar from './components/Topbar';
 import Hero from './components/Hero';
-import PulseSparkline from './components/PulseSparkline';
+// import PulseSparkline from './components/PulseSparkline';
 import Experience from './components/Experience';
 import WhyMicroscale from './components/WhyMicroscale';
 import CaseStudies from './components/CaseStudies';
@@ -66,7 +66,7 @@ const App = () => {
 
         <main className="relative">
           <Hero />
-          <PulseSparkline days={30} microcopy="30-day pulse · shipped iterations." />
+          {/* <PulseSparkline days={30} microcopy="30-day pulse · shipped iterations." /> */}
           <WhyMicroscale />
           <Experience />
           <CaseStudies />

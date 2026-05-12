@@ -41,7 +41,7 @@ function SectionHeading({ number, title, subtitle }) {
         transition={{ duration: 0.45, ease: EASE }}
       >
         <span
-          className="font-mono"
+          className="font-mono section-marker"
           style={{
             fontSize: '0.875rem',
             color: 'var(--accent)',
@@ -83,7 +83,36 @@ export default function WhyMicroscale() {
       className="relative max-w-page mx-auto px-6 md:px-10 py-24 md:py-32"
     >
       <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12">
-        <div />
+        {/* Left gutter: sticky folio mark + reading-progress rail */}
+        <div className="hidden md:block relative" aria-hidden>
+          {/* Folio mark — pins as you read through the section */}
+          <div
+            className="sticky"
+            style={{
+              top: '5rem',
+              textAlign: 'right',
+              paddingRight: '1.75rem',
+              zIndex: 1,
+            }}
+          >
+            <span
+              className="font-mono"
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--accent)',
+                letterSpacing: '0.04em',
+                fontWeight: 500,
+                opacity: 0.55,
+              }}
+            >
+              §1
+            </span>
+          </div>
+          {/* Reading-progress rail (absolute, fills gutter height) */}
+          <div className="absolute inset-y-0 right-3 microscale-rail-track">
+            <div className="microscale-rail-fill" />
+          </div>
+        </div>
         <div>
           <SectionHeading
             number="1"
@@ -96,7 +125,7 @@ export default function WhyMicroscale() {
           </Paragraph>
 
           <Paragraph delay={0.08}>
-            Microscale is the curriculum I wished existed when I started. Before the site, I had a graph of fifteen reference notes — correct but cold, a graph to consult, not a path to walk. What I’m building is the slow path: nine acts, each lesson moving through a hook, a working model you can play with, the idea behind it, a practice round, and a short quiz, every claim traceable to a real shipped model or a paper you can read. Orientation ends with a real working model running live in your browser — small enough to fit, real enough to feel. The final challenge has you assemble a complete system — picking the model, teaching it your task, deciding how to run it, setting the right guardrails — and then watch your choices come alive as a working agent in the tab; either your reasoning held up, or it didn’t. The bet underneath everything: <strong style={{ fontWeight: 500, color: 'var(--ink)' }}>the choices that go into building a model aren’t side details — they’re the product itself.</strong> They decide how fast it responds, how much it costs to run, and what it can actually do for the person using it. That’s what I want a learner to leave with. Not facts about small models. Judgment.
+            Microscale is the curriculum I wished existed when I started. Before the site, I had a graph of fifteen reference notes — correct but cold, a graph to consult, not a path to walk. What I’m building is the slow path: nine acts, each lesson moving through a hook, a working model you can play with, the idea behind it, a practice round, and a short quiz, every claim traceable to a real shipped model or a paper you can read. Orientation ends with a real working model running live in your browser — small enough to fit, real enough to feel. The final challenge has you assemble a complete system — picking the model, teaching it your task, deciding how to run it, setting the right guardrails — and then watch your choices come alive as a working agent in the tab; either your reasoning held up, or it didn’t. The bet underneath everything: <strong style={{ fontWeight: 500, color: 'var(--ink)' }}>the choices that go into building a model aren’t side details — they’re the product itself.</strong> They decide how fast it responds, how much it costs to run, and what it can actually do for the person using it. That’s what I want a learner to leave with.
           </Paragraph>
 
           <motion.div

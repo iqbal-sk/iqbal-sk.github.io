@@ -18,6 +18,7 @@ const experience = [
     location: 'Remote',
     date: '2025 → now',
     theme: 'research + voice',
+    current: true,
     metrics: [],
     prose:
       'Etora compresses the gap between a research question and a defensible answer. Biomedical teams use it to search literature by claim and evidence strength, surface contradictions with traceable provenance, run statistical analysis and image work on their own data without leaving the conversation, and explore the knowledge graph of what’s known versus contested — all inside a scoped workspace their team can share. The voice agent platform handles live phone calls under real conditions: barge-in that doesn’t make the agent feel jumpy, transparent fallback when a customer’s provider key dies mid-call, hangup state that survives carrier weirdness. Built the backend, the intelligence layer, and the real-time inference path. The throughline across both: AI that survives contact with reality.',
@@ -29,6 +30,7 @@ const experience = [
     location: 'microscale.academy',
     date: '2026 → now',
     theme: 'SLM judgment',
+    current: true,
     metrics: [],
     prose:
       'For engineers who have to choose, fine-tune, and serve small language models — not just read papers about them. A nine-act curriculum built around judgment over benchmark trivia: twelve hands-on labs, architecture autopsies of eleven production SLMs, and a browser-based capstone where the learner picks a real serving stack and watches it run. The bet underneath: inference patterns are architecture, and good SLM decisions earn back their parameter count in serving cost.',
@@ -104,7 +106,7 @@ function SectionHeading({ number, title }) {
         transition={{ duration: 0.45, ease: EASE }}
       >
         <span
-          className="font-mono"
+          className="font-mono section-marker"
           style={{
             fontSize: '0.875rem',
             color: 'var(--accent)',
@@ -125,7 +127,7 @@ function SectionHeading({ number, title }) {
 function ExperienceRow({ item, i }) {
   return (
     <motion.li
-      className="grid grid-cols-1 md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12 py-10"
+      className={`grid grid-cols-1 md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12 ${i === 0 ? 'pt-14 pb-10' : 'py-10'}`}
       style={{ borderTop: i === 0 ? 'none' : '1px solid var(--rule)' }}
       initial="hidden"
       whileInView="visible"
@@ -165,7 +167,7 @@ function ExperienceRow({ item, i }) {
             fontSize: '1.5rem',
             lineHeight: 1.25,
             letterSpacing: '-0.005em',
-            fontWeight: 500,
+            fontWeight: item.current ? 600 : 400,
           }}
         >
           {item.company}
@@ -242,7 +244,31 @@ const Experience = () => {
       className="relative max-w-page mx-auto px-6 md:px-10 py-24 md:py-32"
     >
       <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12">
-        <div />
+        {/* Left gutter: sticky folio mark — pins as you read */}
+        <div className="hidden md:block relative" aria-hidden>
+          <div
+            className="sticky"
+            style={{
+              top: '5rem',
+              textAlign: 'right',
+              paddingRight: '1.75rem',
+              zIndex: 1,
+            }}
+          >
+            <span
+              className="font-mono"
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--accent)',
+                letterSpacing: '0.04em',
+                fontWeight: 500,
+                opacity: 0.55,
+              }}
+            >
+              §2
+            </span>
+          </div>
+        </div>
         <div>
           <SectionHeading number="2" title="Experience." />
 

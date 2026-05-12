@@ -32,7 +32,7 @@ export default function Skills() {
               transition={{ duration: 0.45, ease: EASE }}
             >
               <span
-                className="font-mono"
+                className="font-mono section-marker"
                 style={{
                   fontSize: '0.875rem',
                   color: 'var(--accent)',
