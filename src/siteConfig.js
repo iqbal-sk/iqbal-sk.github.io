@@ -13,19 +13,18 @@ export default {
     tagline: 'Notes from building — experiments, design decisions, and the philosophy of iteration.',
   },
 
-  // Identity / hero copy (drives the merged hero block)
+  // Identity / hero copy (Approach A — austere)
   identity: {
     name: 'Iqbal Shaik',
     short: 'Iqbal',
-    location: 'Buffalo, NY',
-    role: 'ML / Backend Engineer',
-    tagline: 'I build software that learns.',
-    pitch: 'I work where ML meets production systems — fine-tuning reasoning models at Buffalo, building real-time semantic search at Order Appetit, and shipping resilient backend infrastructure before either of those.',
+    pitch: 'Currently at Haiva, working on the voice agent platform and on Etora — a research intelligence engine in beta with a Yale lab. On the side, Microscale Academy, a field journal for small language models.',
     email: 'mahammad@buffalo.edu',
     links: {
+      microscale: 'https://microscale.academy',
+      etora: 'https://etora.ai',
+      substack: 'https://hellotensor.substack.com/',
       github: 'https://github.com/iqbal-sk',
       linkedin: 'https://www.linkedin.com/in/iqbal-sk/',
-      substack: 'https://hellotensor.substack.com/',
     },
   },
 

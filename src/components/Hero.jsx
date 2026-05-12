@@ -1,205 +1,127 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import siteConfig from '../siteConfig';
 
 /* ---------------------------------------------------------------
-   Hero — editorial title block.
-
-   Massive stacked name in EB Garamond. Profile photo overlaps the
-   right side of the type. As you scroll the first 600px, the name
-   subtly scales + fades; the photo parallaxes up. The rest of the
-   hero (tagline / pitch / meta) sits below in normal flow.
+   Hero — Approach A. Austere.
+   Name. One short paragraph. Five quiet links. That's it.
    --------------------------------------------------------------- */
 
 const EASE = [0.23, 1, 0.32, 1];
 
-const TAGLINE_WORDS = ['I', 'build', 'software', 'that', 'learns.'];
-const ACCENT_WORD = 'learns.';
-
 const Hero = () => {
-  const { identity, calendlyUrl, calendlyLabel } = siteConfig;
-  const titleRef = useRef(null);
-  const reduced = useReducedMotion();
+  const { identity } = siteConfig;
+  const { links } = identity;
 
-  // Scroll-driven scale + opacity on the giant name.
-  const { scrollY } = useScroll();
-  const titleScale = useTransform(scrollY, [0, 600], reduced ? [1, 1] : [1, 0.92]);
-  const titleOpacity = useTransform(scrollY, [0, 700], reduced ? [1, 1] : [1, 0.35]);
-  const photoY = useTransform(scrollY, [0, 600], reduced ? [0, 0] : [0, -60]);
-  const photoScale = useTransform(scrollY, [0, 600], reduced ? [1, 1] : [1, 0.94]);
+  const ROW = [
+    { label: 'microscale.academy',      href: links.microscale,  note: 'a field journal for small language models' },
+    { label: 'etora.ai',                href: links.etora,       note: 'research intelligence, in beta with Yale' },
+    { label: 'hellotensor.substack.com', href: links.substack,   note: 'notes from the work' },
+    { label: 'github.com/iqbal-sk',     href: links.github,      note: 'code' },
+    { label: 'linkedin',                href: links.linkedin,    note: '' },
+  ];
 
   return (
     <section
       id="hero"
-      className="relative pt-24 md:pt-28 lg:pt-32 pb-28 md:pb-36 overflow-hidden"
+      className="relative pt-32 md:pt-40 lg:pt-48 pb-28 md:pb-36"
     >
       <div className="mx-auto max-w-page px-6 md:px-10">
-        {/* Affiliation line — small, mono, uppercase */}
-        <motion.p
-          className="font-mono"
-          style={{
-            fontSize: '0.75rem',
-            color: 'var(--ink-faint)',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, ease: EASE }}
-        >
-          University at Buffalo · Reasoning Models
-        </motion.p>
-
-        {/* Giant title block with photo overlay */}
-        <motion.div
-          ref={titleRef}
-          className="relative mt-3 md:mt-4"
-          style={{
-            scale: titleScale,
-            opacity: titleOpacity,
-            transformOrigin: 'left top',
-          }}
-        >
-          <motion.h1
-            className="font-display hero-mega"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: EASE, delay: 0.05 }}
-          >
-            <span className="block">{identity.short}</span>
-            <span className="block">Shaik.</span>
-          </motion.h1>
-
-          {/* Photo overlapping the right portion of the type */}
-          <motion.div
-            className="hero-photo"
-            style={{ y: photoY, scale: photoScale, transformOrigin: 'center' }}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, ease: EASE, delay: 0.35 }}
+        <div className="md:grid md:grid-cols-[120px_minmax(0,640px)] md:gap-x-12">
+          {/* Left margin: small portrait */}
+          <motion.aside
+            className="hidden md:block pt-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
           >
             <img
               src="/profile.jpg"
               alt={identity.name}
               loading="eager"
               decoding="async"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-                filter: 'grayscale(0.1) contrast(1.03)',
-              }}
+              className="w-[96px] h-[96px] rounded-md object-cover"
             />
-            <span
-              className="hero-photo-label font-mono"
-              aria-hidden
-            >
-              {identity.short.toLowerCase()}.jpg · 2024
-            </span>
-          </motion.div>
-        </motion.div>
+          </motion.aside>
 
-        {/* Tagline with penned-underline accent */}
-        <motion.h2
-          className="font-display mt-12 md:mt-16"
-          style={{
-            fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
-            lineHeight: 1.2,
-            letterSpacing: '-0.005em',
-            fontWeight: 400,
-            maxWidth: '40ch',
-          }}
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.05, delayChildren: 0.55 } },
-          }}
-        >
-          {TAGLINE_WORDS.map((word, i) => (
-            <motion.span
-              key={i}
-              variants={{
-                hidden: { opacity: 0, y: 8 },
-                visible: { opacity: 1, y: 0 },
+          {/* Reading column */}
+          <div className="md:max-w-reading">
+            <motion.h1
+              className="font-display"
+              style={{
+                fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+                lineHeight: 1.0,
+                letterSpacing: '-0.02em',
+                fontWeight: 500,
               }}
-              transition={{ duration: 0.4, ease: EASE }}
-              className="inline-block mr-[0.28em]"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE }}
             >
-              {word === ACCENT_WORD ? (
-                <span className="penned">
-                  {word}
-                  <svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden>
-                    <path d="M 1 4.5 Q 18 2 38 4.2 T 76 4.6 T 99 4.2" />
-                  </svg>
-                </span>
-              ) : (
-                word
-              )}
-            </motion.span>
-          ))}
-        </motion.h2>
+              {identity.name}.
+            </motion.h1>
 
-        {/* Pitch paragraph */}
-        <motion.p
-          className="mt-7 max-w-[58ch]"
-          style={{
-            color: 'var(--ink-muted)',
-            fontSize: '1.0625rem',
-            lineHeight: 1.65,
-          }}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.95, ease: EASE }}
-        >
-          {identity.pitch}
-        </motion.p>
-
-        {/* Mono meta line */}
-        <motion.div
-          className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono"
-          style={{
-            fontSize: '0.8125rem',
-            color: 'var(--ink-muted)',
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 1.15, ease: EASE }}
-        >
-          <span>{identity.location}</span>
-          <span style={{ color: 'var(--ink-faint)' }}>·</span>
-          <span>{identity.role}</span>
-          <span style={{ color: 'var(--ink-faint)' }}>·</span>
-          {calendlyUrl && (
-            <a
-              href={calendlyUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="link link-ext"
-              style={{ color: 'var(--accent)' }}
+            <motion.p
+              className="mt-8 max-w-[58ch]"
+              style={{
+                color: 'var(--ink)',
+                fontSize: '1.125rem',
+                lineHeight: 1.65,
+              }}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3, ease: EASE }}
             >
-              {calendlyLabel || 'schedule.sh'}
-              <span className="ext-glyph">↗</span>
-            </a>
-          )}
-        </motion.div>
+              {identity.pitch}
+            </motion.p>
 
-        {/* Quiet down-arrow hint */}
-        <motion.div
-          className="mt-16 font-mono"
-          style={{
-            fontSize: '0.75rem',
-            color: 'var(--ink-faint)',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 1.55 }}
-        >
-          ↓ scroll
-        </motion.div>
+            <motion.ul
+              className="mt-12 list-none"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.06, delayChildren: 0.6 } },
+              }}
+            >
+              {ROW.map((row, i) => (
+                <motion.li
+                  key={i}
+                  className="grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] gap-y-1 md:gap-x-8 py-2.5"
+                  style={{ borderTop: '1px solid var(--rule)' }}
+                  variants={{
+                    hidden: { opacity: 0, y: 6 },
+                    visible: { opacity: 1, y: 0 },
+                  }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                >
+                  <a
+                    href={row.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link link-ext font-mono"
+                    style={{
+                      fontSize: '0.875rem',
+                      color: 'var(--ink)',
+                    }}
+                  >
+                    {row.label}
+                    <span className="ext-glyph">↗</span>
+                  </a>
+                  {row.note && (
+                    <span
+                      style={{
+                        fontSize: '0.875rem',
+                        color: 'var(--ink-muted)',
+                      }}
+                    >
+                      {row.note}
+                    </span>
+                  )}
+                </motion.li>
+              ))}
+            </motion.ul>
+          </div>
+        </div>
       </div>
     </section>
   );
