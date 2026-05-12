@@ -1,10 +1,13 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'  // Import Tailwind CSS
-import siteConfig from './siteConfig'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import Lenis from 'lenis';
+import App from './App.jsx';
+import './index.css';
+import siteConfig from './siteConfig';
 
-// Lightweight analytics (Plausible) with opt-in toggle
+// -----------------------------------------------------------------
+// Analytics (Plausible, opt-in)
+// -----------------------------------------------------------------
 function injectPlausible() {
   const domain = import.meta.env.VITE_PLAUSIBLE_DOMAIN;
   const enabled = localStorage.getItem('analytics:enabled');
@@ -17,7 +20,6 @@ function injectPlausible() {
   s.id = 'plausible-script';
   document.head.appendChild(s);
 }
-
 window.enableAnalytics = () => {
   localStorage.setItem('analytics:enabled', 'true');
   injectPlausible();
@@ -27,10 +29,11 @@ window.disableAnalytics = () => {
   const s = document.getElementById('plausible-script');
   if (s) s.remove();
 };
-
 injectPlausible();
 
-// Apply font configuration early
+// -----------------------------------------------------------------
+// Fonts — apply CSS variables from siteConfig
+// -----------------------------------------------------------------
 function applyFonts(cfg) {
   try {
     const fonts = cfg?.fonts || {};
@@ -44,25 +47,11 @@ function applyFonts(cfg) {
       root.style.setProperty(name, value);
     };
 
-    // Always set variables to ensure consistency, even in system mode
-    setVar('--font-sans', fonts.sans?.family || 'ui-sans-serif', fonts.sans?.fallback);
+    setVar('--font-sans', fonts.sans?.family, fonts.sans?.fallback);
     setVar('--font-display', fonts.display?.family || fonts.sans?.family, fonts.display?.fallback || fonts.sans?.fallback);
-    setVar('--font-mono', fonts.mono?.family || 'ui-monospace', fonts.mono?.fallback);
+    setVar('--font-mono', fonts.mono?.family, fonts.mono?.fallback);
 
     if (mode === 'web') {
-      // Preconnect to speed up font loading
-      const preconnect = (href, cross=false) => {
-        if (!href) return;
-        if (document.querySelector(`link[rel="preconnect"][href="${href}"]`)) return;
-        const l = document.createElement('link');
-        l.rel = 'preconnect';
-        l.href = href;
-        if (cross) l.crossOrigin = '';
-        document.head.appendChild(l);
-      };
-      preconnect('https://fonts.googleapis.com');
-      preconnect('https://fonts.gstatic.com', true);
-
       const urls = [fonts.sans?.url, fonts.display?.url, fonts.mono?.url].filter(Boolean);
       for (const href of urls) {
         if (!document.querySelector(`link[href="${href}"]`)) {
@@ -73,13 +62,42 @@ function applyFonts(cfg) {
         }
       }
     }
-  } catch {}
+  } catch {
+    /* fail silent — system fallbacks are fine */
+  }
 }
-
 applyFonts(siteConfig);
+
+// -----------------------------------------------------------------
+// Lenis smooth scroll — disabled under prefers-reduced-motion
+// -----------------------------------------------------------------
+function initSmoothScroll() {
+  const prefersReduced =
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReduced) return;
+
+  const lenis = new Lenis({
+    lerp: 0.1,
+    smoothWheel: true,
+    smoothTouch: false,
+    // Respect anchor clicks — Lenis handles #hash scrolls via window.scrollTo.
+  });
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+
+  // Expose for components that want to imperatively scroll (e.g., nav anchors)
+  window.__lenis = lenis;
+}
+initSmoothScroll();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-)
+);

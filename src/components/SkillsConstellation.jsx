@@ -1,5 +1,18 @@
-import React, { useMemo, useRef, useState } from "react";
-import { useRole } from "../context/RoleContext";
+import { useMemo, useRef, useState } from "react";
+import { motion, useInView, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
+
+const EASE_C = [0.23, 1, 0.32, 1];
+
+// Compute a directional off-canvas offset for a node based on its position.
+// Nodes in the top-left quadrant come in from the top-left, etc.
+function offsetFor(x, y, W, H, factor = 1.6) {
+  const cx = W / 2;
+  const cy = H / 2;
+  const dx = x - cx;
+  const dy = y - cy;
+  const len = Math.hypot(dx, dy) || 1;
+  return { ox: (dx / len) * 240 * factor, oy: (dy / len) * 140 * factor };
+}
 
 // Calm, recruiter-friendly constellation map of skills.
 
@@ -139,7 +152,6 @@ function Dot({ x, y, r = 2, o = 0.2 }) {
 }
 
 export default function SkillsConstellation({ mode = 'combined' }) {
-  const { role } = useRole();
   // compute data based on mode; combined is curated subset to avoid clutter
   const COMBINED = useMemo(() => ({
     centers: [
@@ -271,14 +283,37 @@ export default function SkillsConstellation({ mode = 'combined' }) {
     Vite: 'devicon-vitejs-plain',
   }), []);
 
+  // Magnetic cursor — all nodes follow the cursor by a small spring-damped offset.
+  const reduced = useReducedMotion();
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const magX = useSpring(mouseX, { stiffness: 70, damping: 16, mass: 0.6 });
+  const magY = useSpring(mouseY, { stiffness: 70, damping: 16, mass: 0.6 });
+
   const onMove = (e) => {
+    if (reduced) return;
     const r = wrap.current?.getBoundingClientRect();
     if (!r) return;
-    const x = (e.clientX - r.left) / r.width - 0.5;
-    const y = (e.clientY - r.top) / r.height - 0.5;
-    wrap.current.style.setProperty("--tx", `${x * 8}px`);
-    wrap.current.style.setProperty("--ty", `${y * 6}px`);
+    const cx = (e.clientX - r.left) / r.width - 0.5;
+    const cy = (e.clientY - r.top) / r.height - 0.5;
+    mouseX.set(cx * 18);
+    mouseY.set(cy * 10);
+    // Keep CSS-variable path for backward compat with bg stars styling below.
+    wrap.current.style.setProperty('--tx', `${cx * 8}px`);
+    wrap.current.style.setProperty('--ty', `${cy * 6}px`);
   };
+  const onLeave = () => {
+    if (reduced) return;
+    mouseX.set(0);
+    mouseY.set(0);
+    if (wrap.current) {
+      wrap.current.style.setProperty('--tx', '0px');
+      wrap.current.style.setProperty('--ty', '0px');
+    }
+  };
+
+  // Drift-in entry — fires once when the constellation enters viewport.
+  const inView = useInView(wrap, { once: true, margin: '-80px' });
 
   const click = (skill) => {
     window.dispatchEvent(new CustomEvent("skill:filter", { detail: skill }));
@@ -298,12 +333,27 @@ export default function SkillsConstellation({ mode = 'combined' }) {
     <div
       ref={wrap}
       onMouseMove={onMove}
-      onMouseLeave={() => { if (wrap.current){ wrap.current.style.setProperty('--tx','0px'); wrap.current.style.setProperty('--ty','0px'); }}}
-      className="relative w-full rounded-[12px] border border-border bg-card p-4"
-      style={{ overflow: 'hidden' }}
+      onMouseLeave={onLeave}
+      className="relative w-full p-4"
+      style={{
+        overflow: 'hidden',
+        border: '1px solid var(--rule)',
+        borderRadius: '6px',
+        background: 'transparent',
+      }}
     >
       <div className="flex items-center justify-between px-1 pb-2">
-        <div className="text-sm font-semibold text-foreground">{mode === 'combined' ? 'Combined' : mode} Map</div>
+        <div
+          className="font-mono"
+          style={{
+            fontSize: '0.6875rem',
+            color: 'var(--ink-faint)',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {mode === 'combined' ? 'combined' : String(mode).toLowerCase()} map
+        </div>
       </div>
 
       <svg viewBox={`0 0 ${SIZE.w} ${SIZE.h}`} className="w-full h-[420px] md:h-[480px]">
@@ -341,7 +391,12 @@ export default function SkillsConstellation({ mode = 'combined' }) {
           ))}
         </g>
 
-        {/* hub -> node spokes */}
+        {/* hub -> node spokes (fade in after nodes settle) */}
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.9, delay: 0.95, ease: EASE_C }}
+        >
         <g stroke={THEME.spokeNeutral} fill="none" strokeLinecap="round"
            style={{
              opacity: 'var(--graph-spoke-opacity)',
@@ -367,8 +422,14 @@ export default function SkillsConstellation({ mode = 'combined' }) {
             return <path key={`l-${i}`} d={d} stroke={stroke} strokeWidth={sw} opacity={op} />;
           })}
         </g>
+        </motion.g>
 
         {/* curated cross-links forming a readable graph */}
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.9, delay: 1.1, ease: EASE_C }}
+        >
         <g stroke={THEME.edgeNeutral} strokeLinecap="round"
            style={{
              opacity: 'var(--graph-edge-opacity)',
@@ -394,28 +455,51 @@ export default function SkillsConstellation({ mode = 'combined' }) {
             return <path key={`e-${i}`} d={d} stroke={on ? "url(#edgeActive)" : THEME.edgeNeutral} opacity={op} strokeWidth={sw} />
           })}
         </g>
+        </motion.g>
 
-        {/* centers with designer-friendly labels */}
-        <g>
-          {data.centers.map((c) => (
-            <g key={c.id} onMouseEnter={() => setActive(c.id)} onMouseLeave={() => setActive(null)}>
-              <circle cx={c.x} cy={c.y} r={24} fill="url(#hubHalo)" />
-              <circle cx={c.x} cy={c.y} r={6} fill={THEME.hubCore} />
-              <text x={c.x + 12} y={c.y + 4} fontSize="12" fill={THEME.text} fontWeight="700">{CENTER_LABELS[c.id] || c.id}</text>
-            </g>
-          ))}
-        </g>
+        {/* centers with designer-friendly labels — magnetic + drift-in */}
+        <motion.g
+          style={reduced ? undefined : { x: magX, y: magY }}
+        >
+          {data.centers.map((c, ci) => {
+            const { ox, oy } = offsetFor(c.x, c.y, SIZE.w, SIZE.h, 1.0);
+            return (
+              <motion.g
+                key={c.id}
+                initial={{ x: ox, y: oy, opacity: 0 }}
+                animate={inView ? { x: 0, y: 0, opacity: 1 } : {}}
+                transition={{ duration: 0.75, ease: EASE_C, delay: 0.25 + ci * 0.05 }}
+                onMouseEnter={() => setActive(c.id)}
+                onMouseLeave={() => setActive(null)}
+              >
+                <circle cx={c.x} cy={c.y} r={24} fill="url(#hubHalo)" />
+                <circle cx={c.x} cy={c.y} r={6} fill={THEME.hubCore} />
+                <text x={c.x + 12} y={c.y + 4} fontSize="12" fill={THEME.text} fontWeight="700">{CENTER_LABELS[c.id] || c.id}</text>
+              </motion.g>
+            );
+          })}
+        </motion.g>
 
-        {/* nodes */}
-        <g>
-          {data.nodes.map((n) => {
+        {/* nodes — magnetic + drift-in */}
+        <motion.g
+          style={reduced ? undefined : { x: magX, y: magY }}
+        >
+          {data.nodes.map((n, ni) => {
             const colorPath = COLOR[n.id] ? `${import.meta.env.BASE_URL}${COLOR[n.id]}` : null;
             const klass = (!colorPath) ? (LOGO[n.id] || null) : null;
             const size = 22;
+            const { ox, oy } = offsetFor(n.x, n.y, SIZE.w, SIZE.h, 1.4);
             return (
-              <g key={n.id}
-                 onMouseEnter={() => setActive(n.id)} onMouseLeave={() => setActive(null)}
-                 onClick={() => click(n.id)} style={{ cursor: 'pointer' }}>
+              <motion.g
+                key={n.id}
+                initial={{ x: ox, y: oy, opacity: 0, scale: 0.8 }}
+                animate={inView ? { x: 0, y: 0, opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.75, ease: EASE_C, delay: 0.45 + ni * 0.035 }}
+                onMouseEnter={() => setActive(n.id)}
+                onMouseLeave={() => setActive(null)}
+                onClick={() => click(n.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 {colorPath ? (
                   <>
                     <rect x={n.x - size/2 - 2} y={n.y - size/2 - 2} width={size + 4} height={size + 4} rx="6" ry="6" fill="var(--card)" stroke="var(--border)" />
@@ -447,14 +531,13 @@ export default function SkillsConstellation({ mode = 'combined' }) {
                 >
                   {n.id}
                 </text>
-              </g>
+              </motion.g>
             );
           })}
-        </g>
+        </motion.g>
 
       </svg>
 
-      <div className="mt-2 text-xs text-muted-foreground">Hover to explore; click a skill to filter case studies.</div>
     </div>
   );
 }

@@ -1,93 +1,79 @@
-import React, { useState } from "react";
-import ExperienceProjects from "./components/ExperienceProjects";
-import Topbar from "./components/Topbar";
-import Hero from "./components/Hero";
-import AboutMe from "./components/AboutMe";
-import Education from "./components/Education";
-import Footer from "./components/Footer";
-import Skills from "./components/Skills";
-import siteConfig from "./siteConfig";
-import PulseSparkline from "./components/PulseSparkline";
-import SubstackHighlights from "./components/SubstackHighlights";
-import { RoleProvider } from "./context/RoleContext";
+import { useState } from 'react';
+import { Github, Linkedin, Mail } from 'lucide-react';
 
-import { Github, Linkedin, Mail } from "lucide-react";
+import Topbar from './components/Topbar';
+import Hero from './components/Hero';
+import PulseSparkline from './components/PulseSparkline';
+import Experience from './components/Experience';
+import CaseStudies from './components/CaseStudies';
+import SubstackHighlights from './components/SubstackHighlights';
+import Skills from './components/Skills';
+import Education from './components/Education';
+import Footer from './components/Footer';
+
+import { RoleProvider } from './context/RoleContext';
 
 const App = () => {
   const links = [
-    {
-      href: "https://www.linkedin.com/in/iqbal-sk/",
-      icon: Linkedin,
-    },
-    {
-      href: "mailto:mahammad@buffalo.edu",
-      icon: Mail,
-    },
-    {
-      href: "https://github.com/iqbal-sk",
-      icon: Github,
-    },
+    { href: 'https://www.linkedin.com/in/iqbal-sk/', icon: Linkedin, label: 'LinkedIn' },
+    { href: 'mailto:mahammad@buffalo.edu', icon: Mail, label: 'Email' },
+    { href: 'https://github.com/iqbal-sk', icon: Github, label: 'GitHub' },
   ];
 
   const [openNavigation, setOpenNavigation] = useState(false);
+  const toggleNavigation = () => setOpenNavigation((v) => !v);
 
-  // Toggle the navigation menu
-  const toggleNavigation = () => {
-    setOpenNavigation(!openNavigation);
-  };
-
-  // Handle link clicks with smooth scrolling and page refresh for Home
+  // Smooth-scroll nav handler. Lenis (window.__lenis) drives scroll when present;
+  // falls back to native scrollIntoView under prefers-reduced-motion.
   const handleClick = (e, url) => {
     e.preventDefault();
     if (openNavigation) toggleNavigation();
 
-    // External links
-    if (url.startsWith("http")) {
-      window.open(url, "_blank");
+    if (url.startsWith('http')) {
+      window.open(url, '_blank', 'noopener,noreferrer');
       return;
     }
 
-    // Home route refresh
-    if (url === "/") {
-      window.history.pushState(null, "", "/");
-      window.location.reload();
+    if (url === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      history.replaceState(null, '', '/');
       return;
     }
 
-    // In-page anchor targets (e.g. #experience, #portfolio, #about)
-    if (url.startsWith("#")) {
+    if (url.startsWith('#')) {
       const target = document.querySelector(url);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth" });
-        history.replaceState(null, "", url);
-        window.dispatchEvent(new HashChangeEvent("hashchange"));
+      if (!target) return;
+      const lenis = window.__lenis;
+      if (lenis && typeof lenis.scrollTo === 'function') {
+        lenis.scrollTo(target, { offset: -72, duration: 1.0 });
+      } else {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      return;
-    }
-
-    // Section selectors (like "#contact" already handled above) or other local selectors
-    const targetSection = document.querySelector(url);
-    if (targetSection) {
-      targetSection.scrollIntoView({ behavior: "smooth" });
+      history.replaceState(null, '', url);
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
     }
   };
 
   return (
     <RoleProvider>
-      <div className="bg-surface text-foreground">
+      <div className="relative paper-grain" style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
         <Topbar
           handleClick={handleClick}
           openNavigation={openNavigation}
           toggleNavigation={toggleNavigation}
+          links={links}
         />
-        <Hero dense={siteConfig.heroDense} />
-        <AboutMe compact={siteConfig.aboutCompact} links={links} />
-        <PulseSparkline days={30} microcopy="30-day pulse: shipped iterations." />
-        <ExperienceProjects />
-        <SubstackHighlights />
-        <Skills />
-        <Education />
-        {false}
+
+        <main className="relative">
+          <Hero />
+          <PulseSparkline days={30} microcopy="30-day pulse · shipped iterations." />
+          <Experience />
+          <CaseStudies />
+          <SubstackHighlights />
+          <Skills />
+          <Education />
+        </main>
+
         <Footer links={links} />
       </div>
     </RoleProvider>

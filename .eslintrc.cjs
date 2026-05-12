@@ -26,5 +26,8 @@ module.exports = {
     'no-unused-vars': 'warn',
     'react/no-unescaped-entities': 'off',
     'no-prototype-builtins': 'off',
+    // Project doesn't use prop-types; tokens come from TypeScript types or are inline.
+    'react/prop-types': 'off',
+    'no-empty': ['warn', { allowEmptyCatch: true }],
   },
 };

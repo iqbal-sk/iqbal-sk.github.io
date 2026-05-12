@@ -6,20 +6,36 @@
     <link rel="icon" type="image/svg+xml" href="icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Iqbal — ML/AI Engineer. Practical ML systems, reliable software, measurable impact." />
+    <meta name="description" content="Iqbal — software that learns, and the engineering notebook to prove it." />
     <link rel="canonical" href="" id="canonical-link" />
-    <meta property="og:title" content="Iqbal — ML/AI Engineer" />
-    <meta property="og:description" content="Practical ML systems, reliable software, measurable impact." />
+    <meta property="og:title" content="Iqbal Shaik — ML / Backend Engineer" />
+    <meta property="og:description" content="Software that learns, and the engineering notebook to prove it." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="" id="og-url" />
     <meta property="og:image" content="/icon.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#ffffff" />
-    <title>Iqbal</title>
-    <!-- Devicon (technology logos) -->
+    <meta name="theme-color" content="#FAFAF7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B0C10" media="(prefers-color-scheme: dark)" />
+    <title>Iqbal Shaik</title>
+    <!-- Devicon (technology logos for skill graph) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css" />
+    <script>
+      // Set theme from storage before paint to prevent flash. Light is default.
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'light' || t === 'dark') {
+            document.documentElement.setAttribute('data-theme', t);
+          } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
   </head>
   <body>
     <a href="#hero" class="skip-link">Skip to content</a>
@@ -36,13 +52,14 @@
       const person = {
         "@context": "https://schema.org",
         "@type": "Person",
-        "name": "Iqbal",
-        "jobTitle": "ML/AI Engineer",
+        "name": "Iqbal Shaik",
+        "jobTitle": "ML / Backend Engineer",
         "url": u,
         "email": "mailto:mahammad@buffalo.edu",
         "sameAs": [
           "https://github.com/iqbal-sk",
-          "https://www.linkedin.com/in/iqbal-sk/"
+          "https://www.linkedin.com/in/iqbal-sk/",
+          "https://mlwithiqbal.substack.com/"
         ]
       };
       const s = document.createElement('script');
@@ -52,15 +69,3 @@
     </script>
   </body>
 </html>
-    <script>
-      (function(){
-        try{
-          var t = localStorage.getItem('theme');
-          if (t === 'light' || t === 'dark') {
-            document.documentElement.setAttribute('data-theme', t);
-          } else {
-            document.documentElement.removeAttribute('data-theme');
-          }
-        }catch(e){}
-      })();
-    </script>

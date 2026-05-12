@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import SegmentedSwitch from './SegmentedSwitch';
 
 function SunIcon({ className = "w-4 h-4" }) {

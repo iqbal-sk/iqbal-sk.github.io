@@ -1,206 +1,206 @@
-import { useEffect, useState, useRef } from "react";
-import CalendlyButton from "./CalendlyButton";
-import siteConfig from "../siteConfig";
+import { useRef } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import siteConfig from '../siteConfig';
 
-/* --- visibility hook --- */
-function useOnScreen(ref, rootMargin = "0px") {
-  const [isIntersecting, setIntersecting] = useState(false);
-  useEffect(() => {
-    if (!ref.current) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setIntersecting(entry.isIntersecting),
-      { rootMargin }
-    );
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [ref, rootMargin]);
-  return isIntersecting;
-}
+/* ---------------------------------------------------------------
+   Hero — editorial title block.
 
-function useTypewriter(text, { speed = 65, start = true } = {}) {
-  const [out, setOut] = useState(start ? "" : text);
-  const [done, setDone] = useState(!start);
-  useEffect(() => {
-    if (!start) return;
-    let i = 0;
-    const id = setInterval(() => {
-      i += 1;
-      setOut(text.slice(0, i));
-      if (i >= text.length) {
-        clearInterval(id);
-        setDone(true);
-      }
-    }, speed);
-    return () => clearInterval(id);
-  }, [text, speed, start]);
-  return { out, done };
-}
+   Massive stacked name in EB Garamond. Profile photo overlaps the
+   right side of the type. As you scroll the first 600px, the name
+   subtly scales + fades; the photo parallaxes up. The rest of the
+   hero (tagline / pitch / meta) sits below in normal flow.
+   --------------------------------------------------------------- */
 
-// put this OUTSIDE the component so it’s stable
-const DEFAULT_EASING = (t) => 1 - Math.pow(1 - t, 3);
+const EASE = [0.23, 1, 0.32, 1];
 
-function useRafTween(active, { duration = 900, easing = DEFAULT_EASING } = {}) {
-  const [p, setP] = useState(0); // 0..1
+const TAGLINE_WORDS = ['I', 'build', 'software', 'that', 'learns.'];
+const ACCENT_WORD = 'learns.';
 
-  useEffect(() => {
-    if (!active) {
-      setP(0);
-      return;
-    }
-    let raf, start;
+const Hero = () => {
+  const { identity, calendlyUrl, calendlyLabel } = siteConfig;
+  const titleRef = useRef(null);
+  const reduced = useReducedMotion();
 
-    const step = (ts) => {
-      if (!start) start = ts;
-      const t = Math.min(1, (ts - start) / duration);
-      setP(easing(t)); // <- use stable function
-      if (t < 1) raf = requestAnimationFrame(step);
-    };
-
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-    // ✅ do NOT depend on `easing` (it changes identity across renders)
-  }, [active, duration]);
-
-  return p;
-}
-
-const Hero = ({ title, subtitle, className = "", dense = false }) => {
-  const line1 =
-    "Building software that learns — and helps people do the same.";
-  const line2 = ""; // no second line for the new hero
-
-  const { out: typed1, done: done1 } = useTypewriter(line1, {
-    speed: 65,
-    start: false, // render immediately (no typing animation)
-  });
-
-  // track first time both: typed is done AND line1 is on screen
-  const [revealed, setRevealed] = useState(false);
-
-  // watch visibility of line1
-  const line1Ref = useRef(null);
-  const line1OnScreen = useOnScreen(line1Ref);
-
-  // delay before showing line2 once both conditions met
-  useEffect(() => {
-    if (revealed || !done1 || !line1OnScreen) return;
-    const t = setTimeout(() => setRevealed(true), 400);
-    return () => clearTimeout(t);
-  }, [revealed, done1, line1OnScreen]);
-
-  const s =
-    subtitle ??
-    "From backend systems to large language models, I love shaping ideas that grow smarter over time.";
-
-  // animate line2 reveal when `revealed` becomes true
-  const reveal = useRafTween(revealed, { duration: 900 });
-
-  const headlineSize = dense
-    ? "text-[40px] leading-tight md:text-[56px] lg:text-[72px]"
-    : "text-[44px] leading-tight md:text-[64px] lg:text-[80px]";
-
-  const padY = dense
-    ? "pt-20 md:pt-28 lg:pt-32 pb-16"
-    : "pt-28 md:pt-36 lg:pt-44 pb-28";
+  // Scroll-driven scale + opacity on the giant name.
+  const { scrollY } = useScroll();
+  const titleScale = useTransform(scrollY, [0, 600], reduced ? [1, 1] : [1, 0.92]);
+  const titleOpacity = useTransform(scrollY, [0, 700], reduced ? [1, 1] : [1, 0.35]);
+  const photoY = useTransform(scrollY, [0, 600], reduced ? [0, 0] : [0, -60]);
+  const photoScale = useTransform(scrollY, [0, 600], reduced ? [1, 1] : [1, 0.94]);
 
   return (
     <section
       id="hero"
-      className={`relative -mt-12 overflow-x-hidden overflow-y-visible ${className}`}
+      className="relative pt-24 md:pt-28 lg:pt-32 pb-28 md:pb-36 overflow-hidden"
     >
-      {/* ---- Background: single gradient + grain (no dark mode) ---- */}
-      <div aria-hidden className="absolute inset-0 -z-10">
-        {/* diagonal glassy gradient */}
-        <div
-          className="absolute inset-0"
+      <div className="mx-auto max-w-page px-6 md:px-10">
+        {/* Affiliation line — small, mono, uppercase */}
+        <motion.p
+          className="font-mono"
           style={{
-            background:
-              "linear-gradient(135deg, #e8f2ff 0%, #d1e7fe 8%, #b8d4f1 16%, #9fb8e3 24%, #f8fafc 32%, #e2e8f0 40%, #cbd5e1 48%, #94a3b8 56%, #f1f5f9 64%, #c7d2fe 72%, #a5b4fc 80%, #8b5cf6 88%, #e8f2ff 100%)",
-            maskImage:
-              "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.1) 90%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0.1) 90%, transparent 100%)",
+            fontSize: '0.75rem',
+            color: 'var(--ink-faint)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
           }}
-        />
-        {/* soft radial overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(241,243,251,0.4) 0%, rgba(233,237,247,0.2) 35%, rgba(218,223,236,0.1) 70%, transparent 100%), linear-gradient(to bottom, transparent 0%, rgba(248,250,252,0.3) 60%, rgba(248,250,252,0.8) 85%, #f8fafc 100%)",
-          }}
-        />
-        {/* grain */}
-        <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage:
-              "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22140%22 viewBox=%220 0 140 140%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/></filter><rect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.35%22/></svg>')",
-            backgroundSize: "140px 140px",
-          }}
-        />
-        {/* soft white veil */}
-        <div className="absolute inset-0 backdrop-blur-3xl backdrop-saturate-200 bg-white/8" />
-        {/* subtle shimmer */}
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            background:
-              "linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)",
-            backgroundSize: "200% 200%",
-            animation: "shimmer 8s ease-in-out infinite",
-          }}
-        />
-      </div>
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: EASE }}
+        >
+          University at Buffalo · Reasoning Models
+        </motion.p>
 
-      {/* removed top haze here to avoid visible band under the header; header provides its own glass gradient */}
+        {/* Giant title block with photo overlay */}
+        <motion.div
+          ref={titleRef}
+          className="relative mt-3 md:mt-4"
+          style={{
+            scale: titleScale,
+            opacity: titleOpacity,
+            transformOrigin: 'left top',
+          }}
+        >
+          <motion.h1
+            className="font-display hero-mega"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, ease: EASE, delay: 0.05 }}
+          >
+            <span className="block">{identity.short}</span>
+            <span className="block">Shaik.</span>
+          </motion.h1>
 
-      {/* Pull content closer to top: was py-40/52/60; now tighter */}
-      <div className={`${padY} bg-transparent`}>
-        <div className="relative mx-auto max-w-7xl px-5 md:px-8">
-          <div className="mx-auto max-w-[36rem] lg:max-w-[42rem]">
-            {/* Headline */}
-            <h1
-              className="
-              relative z-10 flex flex-col
-              font-semibold tracking-[-0.02em]
-              ${headlineSize}
-              text-transparent bg-clip-text
-              bg-[linear-gradient(183deg,rgba(236,241,253,0)_13.9%,rgba(236,241,253,0.30)_121.71%),linear-gradient(0deg,#2E3038,#2E3038)]"
+          {/* Photo overlapping the right portion of the type */}
+          <motion.div
+            className="hero-photo"
+            style={{ y: photoY, scale: photoScale, transformOrigin: 'center' }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.9, ease: EASE, delay: 0.35 }}
+          >
+            <img
+              src="/profile.jpg"
+              alt={identity.name}
+              loading="eager"
+              decoding="async"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+                filter: 'grayscale(0.1) contrast(1.03)',
+              }}
+            />
+            <span
+              className="hero-photo-label font-mono"
+              aria-hidden
             >
-              {/* First line */}
-              <span ref={line1Ref} className="whitespace-nowrap">
-                {typed1}
-              </span>
+              {identity.short.toLowerCase()}.jpg · 2024
+            </span>
+          </motion.div>
+        </motion.div>
 
-              {/* No second line in new hero */}
-            </h1>
-            {/* Subtitle */}
-            <p
-              className="
-                mt-3 text-transparent bg-clip-text
-                text-lg md:text-xl lg:text-2xl font-medium tracking-tight
-                bg-[linear-gradient(183deg,rgba(236,241,253,0)_13.9%,rgba(236,241,253,0.30)_121.71%),linear-gradient(0deg,#2E3038,#2E3038)]
-              "
+        {/* Tagline with penned-underline accent */}
+        <motion.h2
+          className="font-display mt-12 md:mt-16"
+          style={{
+            fontSize: 'clamp(1.75rem, 3vw + 0.5rem, 2.75rem)',
+            lineHeight: 1.2,
+            letterSpacing: '-0.005em',
+            fontWeight: 400,
+            maxWidth: '40ch',
+          }}
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.05, delayChildren: 0.55 } },
+          }}
+        >
+          {TAGLINE_WORDS.map((word, i) => (
+            <motion.span
+              key={i}
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.4, ease: EASE }}
+              className="inline-block mr-[0.28em]"
             >
-              {s}
-            </p>
+              {word === ACCENT_WORD ? (
+                <span className="penned">
+                  {word}
+                  <svg viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden>
+                    <path d="M 1 4.5 Q 18 2 38 4.2 T 76 4.6 T 99 4.2" />
+                  </svg>
+                </span>
+              ) : (
+                word
+              )}
+            </motion.span>
+          ))}
+        </motion.h2>
 
-            {/* CTAs removed per new concise hero */}
-          </div>
-        </div>
+        {/* Pitch paragraph */}
+        <motion.p
+          className="mt-7 max-w-[58ch]"
+          style={{
+            color: 'var(--ink-muted)',
+            fontSize: '1.0625rem',
+            lineHeight: 1.65,
+          }}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.95, ease: EASE }}
+        >
+          {identity.pitch}
+        </motion.p>
+
+        {/* Mono meta line */}
+        <motion.div
+          className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono"
+          style={{
+            fontSize: '0.8125rem',
+            color: 'var(--ink-muted)',
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 1.15, ease: EASE }}
+        >
+          <span>{identity.location}</span>
+          <span style={{ color: 'var(--ink-faint)' }}>·</span>
+          <span>{identity.role}</span>
+          <span style={{ color: 'var(--ink-faint)' }}>·</span>
+          {calendlyUrl && (
+            <a
+              href={calendlyUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="link link-ext"
+              style={{ color: 'var(--accent)' }}
+            >
+              {calendlyLabel || 'schedule.sh'}
+              <span className="ext-glyph">↗</span>
+            </a>
+          )}
+        </motion.div>
+
+        {/* Quiet down-arrow hint */}
+        <motion.div
+          className="mt-16 font-mono"
+          style={{
+            fontSize: '0.75rem',
+            color: 'var(--ink-faint)',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 1.55 }}
+        >
+          ↓ scroll
+        </motion.div>
       </div>
-
-      {/* bottom haze strip (single) */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 z-10 h-20 w-full backdrop-blur-2xl
-                  [mask-image:linear-gradient(to_bottom,black_65%,rgba(0,0,0,0.88)_75%,transparent_100%)]"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(221,226,238,0.40) 0%, rgba(221,226,238,0.00) 100%)",
-        }}
-      />
     </section>
   );
 };

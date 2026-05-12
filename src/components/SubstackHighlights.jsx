@@ -1,129 +1,210 @@
-import React, { useEffect, useState, useMemo } from "react";
-import siteConfig from "../siteConfig";
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import siteConfig from '../siteConfig';
 
-function parseRss(xmlText, max = 2) {
+/* ---------------------------------------------------------------
+   Substack — see DESIGN.md "Substack list"
+
+   Inline list, no cards. Date hangs in left margin (mono).
+   Title in Instrument Serif italic. Snippet in body sans. ↗ on hover.
+   --------------------------------------------------------------- */
+
+const EASE = [0.23, 1, 0.32, 1];
+
+function stripHtml(s, limit = 180) {
+  if (!s) return '';
+  let x = s.replace(/<!\[CDATA\[|\]\]>/g, '');
+  const div = document.createElement('div');
+  div.innerHTML = x;
+  x = (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+  if (limit && x.length > limit) x = x.slice(0, limit - 1) + '…';
+  return x;
+}
+
+function parseRss(xmlText, max = 3) {
   try {
-    const doc = new window.DOMParser().parseFromString(xmlText, "text/xml");
-    const items = Array.from(doc.querySelectorAll("item")).slice(0, max).map((it) => {
-      const title = it.querySelector("title")?.textContent || "Untitled";
-      const link = it.querySelector("link")?.textContent || "#";
-      const pubDate = it.querySelector("pubDate")?.textContent || "";
-      const description = it.querySelector("description")?.textContent || "";
-      const encoded = it.querySelector("content\\:encoded")?.textContent || description;
-      // Try media tags first
-      const media = it.querySelector('media\\:content, media\\:thumbnail, enclosure[type^="image"]');
-      let image = media?.getAttribute('url') || media?.getAttribute('href') || '';
-      if (!image && encoded) {
-        // Parse first <img src="...">
-        const div = document.createElement('div');
-        div.innerHTML = encoded;
-        const img = div.querySelector('img');
-        if (img) image = img.getAttribute('src') || '';
-      }
-      return { title, link, pubDate, description: encoded || description, image };
-    });
-    return items;
+    const doc = new window.DOMParser().parseFromString(xmlText, 'text/xml');
+    return Array.from(doc.querySelectorAll('item'))
+      .slice(0, max)
+      .map((it) => ({
+        title: it.querySelector('title')?.textContent || 'Untitled',
+        link: it.querySelector('link')?.textContent || '#',
+        pubDate: it.querySelector('pubDate')?.textContent || '',
+        description: it.querySelector('description')?.textContent || '',
+      }));
   } catch {
     return [];
   }
 }
 
+function fmtDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    });
+  } catch {
+    return '';
+  }
+}
+
 export default function SubstackHighlights() {
   const { substack } = siteConfig || {};
-  const feedUrl = substack?.feedUrl;
-  const maxPosts = substack?.maxPosts ?? 2;
-  const title = substack?.title || "Where I Think Out Loud";
-  const tagline = substack?.tagline || "I document what I learn while building — experiments, design notes, and the philosophy of iteration.";
-  const cta = substack?.cta || { label: "Read more on Substack", href: substack?.home || feedUrl };
-
+  const max = substack?.maxPosts ?? 3;
+  const home = substack?.home;
   const [posts, setPosts] = useState([]);
-  const [loaded, setLoaded] = useState(false);
-  const clean = (s, limit = 220) => {
-    if (!s) return "";
-    let x = s.replace(/<!\[CDATA\[|\]\]>/g, "");
-    const div = document.createElement('div');
-    div.innerHTML = x;
-    x = div.textContent || div.innerText || '';
-    x = x.replace(/\s+/g, ' ').trim();
-    if (limit && x.length > limit) x = x.slice(0, limit - 1) + '…';
-    return x;
-  };
 
   useEffect(() => {
     let cancelled = false;
     async function run() {
-      setLoaded(false);
-      // Try build-time JSON first to avoid CORS
       try {
         const base = import.meta.env.BASE_URL || '';
-        const ver = (typeof __BUILD_ID__ !== 'undefined') ? __BUILD_ID__ : '';
-        const resJson = await fetch(`${base}substack.json${ver ? `?v=${ver}` : ''}`, { cache: 'no-store' });
-        if (resJson.ok) {
-          const j = await resJson.json();
-          if (!cancelled) { setPosts(j.slice(0, maxPosts)); setLoaded(true); return; }
+        const res = await fetch(`${base}substack.json`, { cache: 'no-store' });
+        if (res.ok) {
+          const j = await res.json();
+          if (!cancelled) setPosts(j.slice(0, max));
+          return;
         }
-      } catch {}
-      if (!feedUrl) { setLoaded(true); return; }
+      } catch { /* fall through */ }
+      if (!substack?.feedUrl) return;
       try {
-        const res = await fetch(feedUrl);
-        if (!res.ok) throw new Error("substack_fetch");
-        const text = await res.text();
-        const items = parseRss(text, maxPosts);
-        if (!cancelled) setPosts(items);
-      } catch {
-        // fail silently; CTA remains
-      } finally {
-        if (!cancelled) setLoaded(true);
-      }
+        const r = await fetch(substack.feedUrl);
+        if (!r.ok) return;
+        const t = await r.text();
+        if (!cancelled) setPosts(parseRss(t, max));
+      } catch { /* silent */ }
     }
     run();
     return () => { cancelled = true; };
-  }, [feedUrl, maxPosts]);
+  }, [substack?.feedUrl, max]);
 
   return (
-    <section id="substack" className="pt-10 pb-6">
-      <div className="mx-auto max-w-5xl px-5 md:px-8">
-        <div className="text-center mb-4">
-          <h2 className="text-4xl font-bold text-foreground">{title}</h2>
-          {tagline && (
-            <p className="mt-2 text-sm text-muted-foreground">{tagline}</p>
-          )}
-        </div>
+    <section
+      id="writing"
+      className="relative max-w-page mx-auto px-6 md:px-10 py-24 md:py-32"
+    >
+      <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12">
+        <div />
+        <div>
+          <header className="mb-10">
+            <motion.h2
+              className="font-display flex items-baseline gap-4"
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.45, ease: EASE }}
+            >
+              <span
+                className="font-mono"
+                style={{
+                  fontSize: '0.875rem',
+                  color: 'var(--accent)',
+                  letterSpacing: '0.02em',
+                  fontWeight: 500,
+                  position: 'relative',
+                  top: '-0.45em',
+                }}
+              >
+                §3
+              </span>
+              <span style={{ fontWeight: 500 }}>Writing.</span>
+            </motion.h2>
+            <p
+              className="mt-3 max-w-[60ch] italic font-display"
+              style={{
+                fontSize: '1.125rem',
+                color: 'var(--ink-muted)',
+                lineHeight: 1.5,
+              }}
+            >
+              {substack?.tagline}
+            </p>
+          </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(posts || []).map((p, i) => {
-            const date = p.pubDate ? new Date(p.pubDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-            const title = clean(p.title, 140);
-            const summary = clean(p.description, 180);
-            const img = p.image || `${import.meta.env.BASE_URL || ''}placeholder.svg`;
-            return (
-              <a key={i} href={p.link} target="_blank" rel="noopener noreferrer"
-                 className="group block rounded-[16px] border border-border bg-card overflow-hidden transition-all hover:bg-muted/60 hover:-translate-y-0.5">
-                <div className="aspect-[16/9] w-full overflow-hidden bg-muted">
-                  <img src={img} alt="Post thumbnail" loading="lazy" className="w-full h-full object-cover" />
-                </div>
-                <div className="px-5 pt-4 text-xs text-muted-foreground">{date}</div>
-                <div className="px-5 mt-1 text-lg font-semibold text-foreground">
-                  <span className="bg-gradient-to-r from-transparent via-transparent to-transparent group-hover:underline">
-                    {title}
-                  </span>
-                </div>
-                {summary && (
-                  <div className="px-5 mt-2 text-sm text-muted-foreground line-clamp-3">{summary}</div>
-                )}
-                <div className="px-5 pb-4 mt-3 text-primary text-sm inline-flex items-center opacity-90 group-hover:opacity-100">
-                  Read →
-                </div>
+          <ol className="list-none" style={{ borderTop: '1px solid var(--rule)' }}>
+            {(posts || []).map((p, i) => {
+              const date = fmtDate(p.pubDate);
+              const title = stripHtml(p.title, 140);
+              const summary = stripHtml(p.description, 220);
+              return (
+                <motion.li
+                  key={i}
+                  className="grid grid-cols-1 md:grid-cols-[120px_minmax(0,1fr)] md:gap-x-12 py-8"
+                  style={{ borderBottom: '1px solid var(--rule)' }}
+                  initial={{ opacity: 0, x: 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.55, ease: EASE, delay: i * 0.08 }}
+                >
+                  <aside
+                    className="font-mono mb-2 md:mb-0 md:pt-1.5 tabular"
+                    style={{
+                      fontSize: '0.8125rem',
+                      color: 'var(--ink-muted)',
+                    }}
+                  >
+                    {date}
+                  </aside>
+
+                  <a
+                    href={p.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block link-ext"
+                    style={{ display: 'block' }}
+                  >
+                    <h3
+                      className="font-display"
+                      style={{
+                        fontSize: '1.5rem',
+                        lineHeight: 1.25,
+                        letterSpacing: '-0.005em',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {title}
+                      <span
+                        className="ext-glyph inline-block ml-2 align-middle"
+                        style={{
+                          fontSize: '0.875rem',
+                          color: 'var(--accent)',
+                        }}
+                      >
+                        ↗
+                      </span>
+                    </h3>
+                    {summary && (
+                      <p
+                        className="mt-3 line-clamp-3"
+                        style={{
+                          fontSize: '0.9375rem',
+                          lineHeight: 1.6,
+                          color: 'var(--ink-muted)',
+                          maxWidth: '60ch',
+                        }}
+                      >
+                        {summary}
+                      </p>
+                    )}
+                  </a>
+                </motion.li>
+              );
+            })}
+          </ol>
+
+          {home && (
+            <div className="mt-8">
+              <a
+                href={home}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link link-ext font-mono"
+                style={{ color: 'var(--accent)', fontSize: '0.8125rem' }}
+              >
+                read more on substack<span className="ext-glyph">↗</span>
               </a>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 text-center">
-          {cta?.href && (
-            <a href={cta.href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">
-              {cta.label}
-            </a>
+            </div>
           )}
         </div>
       </div>
