@@ -5,8 +5,8 @@ import Topbar from './components/Topbar';
 import Hero from './components/Hero';
 import PulseSparkline from './components/PulseSparkline';
 import Experience from './components/Experience';
+import WhyMicroscale from './components/WhyMicroscale';
 import CaseStudies from './components/CaseStudies';
-import SubstackHighlights from './components/SubstackHighlights';
 import Skills from './components/Skills';
 import Education from './components/Education';
 import Footer from './components/Footer';
@@ -67,9 +67,9 @@ const App = () => {
         <main className="relative">
           <Hero />
           <PulseSparkline days={30} microcopy="30-day pulse · shipped iterations." />
+          <WhyMicroscale />
           <Experience />
           <CaseStudies />
-          <SubstackHighlights />
           <Skills />
           <Education />
         </main>

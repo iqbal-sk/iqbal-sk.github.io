@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring, useReducedMotion } from 'framer-motion';
 
 /* ---------------------------------------------------------------
-   §2 Case Studies — horizontal pinned scroll on desktop, vertical on mobile.
+   §3 Case Studies — horizontal pinned scroll on desktop, vertical on mobile.
 
    Desktop: section is N×100vh tall, contents sticky, horizontal
    translation driven by scroll progress. Mobile: simple vertical
@@ -99,7 +99,7 @@ function SectionHeading() {
                 top: '-0.45em',
               }}
             >
-              §2
+              §3
             </span>
             <span style={{ fontWeight: 500 }}>Case Studies.</span>
           </motion.h2>
@@ -163,7 +163,7 @@ function Panel({ item, index, total }) {
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            §2.{index + 1}  ·  {item.year}  ·  {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+            §3.{index + 1}  ·  {item.year}  ·  {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
           </div>
           <h3
             className="font-display"
@@ -377,7 +377,7 @@ function VerticalCaseStudies() {
                   textTransform: 'uppercase',
                 }}
               >
-                §2.{i + 1}  ·  {item.year}
+                §3.{i + 1}  ·  {item.year}
               </div>
               <h3
                 className="font-display"

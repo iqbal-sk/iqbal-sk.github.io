@@ -13,6 +13,28 @@ const EASE = [0.23, 1, 0.32, 1];
 
 const experience = [
   {
+    company: 'Haiva',
+    role: 'Member of Technical Staff',
+    location: 'Remote',
+    date: '2025 → now',
+    theme: 'research + voice',
+    metrics: [],
+    prose:
+      'Etora compresses the gap between a research question and a defensible answer. Biomedical teams use it to search literature by claim and evidence strength, surface contradictions with traceable provenance, run statistical analysis and image work on their own data without leaving the conversation, and explore the knowledge graph of what’s known versus contested — all inside a scoped workspace their team can share. The voice agent platform handles live phone calls under real conditions: barge-in that doesn’t make the agent feel jumpy, transparent fallback when a customer’s provider key dies mid-call, hangup state that survives carrier weirdness. Built the backend, the intelligence layer, and the real-time inference path. The throughline across both: AI that survives contact with reality.',
+    tags: ['Python', 'FastAPI', 'Qdrant', 'Memgraph', 'WebRTC', 'Docker'],
+  },
+  {
+    company: 'Microscale Academy',
+    role: 'Author',
+    location: 'microscale.academy',
+    date: '2026 → now',
+    theme: 'SLM judgment',
+    metrics: [],
+    prose:
+      'For engineers who have to choose, fine-tune, and serve small language models — not just read papers about them. A nine-act curriculum built around judgment over benchmark trivia: twelve hands-on labs, architecture autopsies of eleven production SLMs, and a browser-based capstone where the learner picks a real serving stack and watches it run. The bet underneath: inference patterns are architecture, and good SLM decisions earn back their parameter count in serving cost.',
+    tags: ['SLM', 'Transformer', 'LoRA', 'DPO', 'Quantization', 'vLLM'],
+  },
+  {
     company: 'University at Buffalo',
     role: 'Research Assistant',
     location: 'Buffalo, NY',
@@ -24,7 +46,7 @@ const experience = [
       { value: 800, suffix: 'K', label: 'dialogues' },
     ],
     prose:
-      'When models start to reason, personality matters. I explored how large language models can hold consistent voices while thinking step-by-step. Fine-tuned Llama-3 70B with lightweight QLoRA adapters over hundreds of thousands of persona-rich dialogues, and built the evaluation suite that tracked reasoning gains. Where I learned to balance scale with intent — making intelligence efficient instead of excessive.',
+      'When reasoning models start thinking out loud, they often forget who they’re supposed to be. Fine-tuned Llama-3 70B with QLoRA over hundreds of thousands of persona-rich dialogues to keep voice consistent through multi-step reasoning. Built the eval suite that measured whether intent survived chain-of-thought.',
     tags: ['Llama-3', 'QLoRA', 'Reasoning', 'PyTorch', 'Eval'],
   },
   {
@@ -37,7 +59,7 @@ const experience = [
       { value: 95, suffix: '%', prefix: '≈', label: 'accuracy' },
     ],
     prose:
-      'Restaurant owners in Buffalo and Rochester asking their data a question and getting an answer before the next order prints. I built the semantic backbone behind that — FastAPI services and a Pinecone-powered retrieval layer turning raw operational data into natural-language insights. Rewired how I think about AI products: real-time usefulness beats academic perfection every time.',
+      'Restaurant owners in Buffalo and Rochester needed to ask their operational data a question and get a useful answer before the next order prints — without a data team. Built the semantic backbone behind that: turning raw ops data into natural-language answers small operators could actually act on, served fast enough to fit between tickets.',
     tags: ['FastAPI', 'Pinecone', 'RAG', 'MongoDB', 'Agents'],
   },
   {
@@ -52,7 +74,7 @@ const experience = [
       { value: 90, suffix: '%', prefix: '−', label: 'faster ETL', negative: true },
     ],
     prose:
-      'Two worlds at once. On the academic side, productionized a grammar-feedback system that gave K-12 students personalized writing suggestions within an hour — piloted at a 2K-student school, scaled across the network. On the business side, engineered ETL pipelines spanning 150K schools to surface adoption patterns and guide outreach. Pedagogy and pipelines: machine learning only matters when it closes a human feedback loop.',
+      'K-12 students who wrote an essay on Monday and got personalized grammar feedback before lunch on Tuesday — when the suggestions still meant something. Productionized the system after a 2K-student pilot and scaled it across the network. Separately, engineered ETL pipelines across 150K schools so the outreach team could see adoption patterns instead of guessing at them.',
     tags: ['MLOps', 'Airflow', 'DVC', 'MLflow', 'OpenCV', 'NLP'],
   },
   {
@@ -65,7 +87,7 @@ const experience = [
       { value: 40, suffix: '%', prefix: '−', label: 'DB load' },
     ],
     prose:
-      'My crash course in invisible reliability. Built Redis-backed server-sent events and caching layers that kept MagicJack’s live user data flowing while cutting database load. Automated billing orchestration and CI/CD pipelines. No AI here — just the discipline that keeps future intelligence grounded in solid infrastructure.',
+      'MagicJack users on live calls don’t notice infrastructure until it fails them. Built Redis-backed server-sent events and caching layers that kept live session data flowing while cutting database load, automated billing orchestration so the back-office stopped reconciling spreadsheets by hand, and the CI/CD that took the manual work out of releases.',
     tags: ['Java', 'Spring Boot', 'SSE', 'Redis', 'CI/CD', 'Testcontainers'],
   },
 ];
@@ -151,7 +173,8 @@ function ExperienceRow({ item, i }) {
           <span style={{ color: 'var(--ink-muted)', fontStyle: 'italic' }}>{item.role}</span>
         </h3>
 
-        {/* Metric line with count-ups */}
+        {/* Metric line with count-ups (only when metrics exist) */}
+        {item.metrics.length > 0 && (
         <div
           className="font-mono mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1"
           style={{
@@ -181,6 +204,7 @@ function ExperienceRow({ item, i }) {
             </span>
           ))}
         </div>
+        )}
 
         <p
           className="mt-5"
@@ -220,7 +244,7 @@ const Experience = () => {
       <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12">
         <div />
         <div>
-          <SectionHeading number="1" title="Experience." />
+          <SectionHeading number="2" title="Experience." />
 
           <ol className="list-none" style={{ borderTop: '1px solid var(--rule)' }}>
             {experience.map((item, i) => (

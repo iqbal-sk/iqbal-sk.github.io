@@ -17,7 +17,7 @@ export default {
   identity: {
     name: 'Iqbal Shaik',
     short: 'Iqbal',
-    pitch: 'Currently at Haiva, working on the voice agent platform and on Etora — a research intelligence engine in beta with a Yale lab. On the side, Microscale Academy, a field journal for small language models.',
+    pitch: 'Currently at Haiva. Building Etora — a research workspace where biomedical teams read literature, analyze their own data, and explore the knowledge graph in one conversation, in beta with a Yale lab — and the voice agent platform behind live phone conversations. On the side, Microscale Academy, a field journal for small language models.',
     email: 'mahammad@buffalo.edu',
     links: {
       microscale: 'https://microscale.academy',

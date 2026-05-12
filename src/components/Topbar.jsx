@@ -15,10 +15,11 @@ import siteConfig from '../siteConfig';
    --------------------------------------------------------------- */
 
 const NAV = [
-  { id: 'hero',       label: 'Home',       url: '#hero' },
-  { id: 'experience', label: 'Experience', url: '#experience' },
-  { id: 'writing',    label: 'Writing',    url: '#writing' },
-  { id: 'skills',     label: 'Skills',     url: '#skills' },
+  { id: 'hero',         label: 'Home',         url: '#hero' },
+  { id: 'microscale',   label: 'Microscale',   url: '#microscale' },
+  { id: 'experience',   label: 'Experience',   url: '#experience' },
+  { id: 'case-studies', label: 'Case Studies', url: '#case-studies' },
+  { id: 'skills',       label: 'Skills',       url: '#skills' },
 ];
 
 function useActiveSection(ids) {

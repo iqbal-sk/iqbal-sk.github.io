@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import siteConfig from '../siteConfig';
 
 /* ---------------------------------------------------------------
@@ -11,6 +11,12 @@ const EASE = [0.23, 1, 0.32, 1];
 const Hero = () => {
   const { identity } = siteConfig;
   const { links } = identity;
+
+  // Scroll-driven parallax on the portrait (disabled under prefers-reduced-motion).
+  const reduced = useReducedMotion();
+  const { scrollY } = useScroll();
+  const photoY = useTransform(scrollY, [0, 600], reduced ? [0, 0] : [0, -60]);
+  const photoScale = useTransform(scrollY, [0, 600], reduced ? [1, 1] : [1, 0.94]);
 
   const ROW = [
     { label: 'microscale.academy',      href: links.microscale,  note: 'a field journal for small language models' },
@@ -26,23 +32,7 @@ const Hero = () => {
       className="relative pt-32 md:pt-40 lg:pt-48 pb-28 md:pb-36"
     >
       <div className="mx-auto max-w-page px-6 md:px-10">
-        <div className="md:grid md:grid-cols-[120px_minmax(0,640px)] md:gap-x-12">
-          {/* Left margin: small portrait */}
-          <motion.aside
-            className="hidden md:block pt-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-          >
-            <img
-              src="/profile.jpg"
-              alt={identity.name}
-              loading="eager"
-              decoding="async"
-              className="w-[96px] h-[96px] rounded-md object-cover"
-            />
-          </motion.aside>
-
+        <div className="md:grid md:grid-cols-[minmax(0,640px)_220px] md:gap-x-16 md:items-start">
           {/* Reading column */}
           <div className="md:max-w-reading">
             <motion.h1
@@ -121,6 +111,24 @@ const Hero = () => {
               ))}
             </motion.ul>
           </div>
+
+          {/* Right column: portrait with scroll-driven parallax */}
+          <motion.aside
+            className="hidden md:block pt-3"
+            style={{ y: photoY, scale: photoScale, transformOrigin: 'center top' }}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.9, delay: 0.25, ease: EASE }}
+          >
+            <img
+              src="/profile.jpg"
+              alt={identity.name}
+              loading="eager"
+              decoding="async"
+              className="rounded-md object-cover"
+              style={{ width: '220px', height: '264px' }}
+            />
+          </motion.aside>
         </div>
       </div>
     </section>
