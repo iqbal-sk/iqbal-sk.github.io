@@ -447,7 +447,7 @@ export default function CaseStudies() {
 
   return (
     <>
-      <div className="pt-24 md:pt-32">
+      <div className="pt-12 md:pt-16">
         <SectionHeading />
       </div>
       {isWide && !reduced ? <HorizontalCaseStudies /> : <VerticalCaseStudies />}

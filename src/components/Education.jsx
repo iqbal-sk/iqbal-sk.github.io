@@ -21,7 +21,7 @@ const Education = () => {
   return (
     <section
       id="education"
-      className="relative max-w-page mx-auto px-6 md:px-10 py-24 md:py-32"
+      className="relative max-w-page mx-auto px-6 md:px-10 py-12 md:py-16"
     >
       <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12">
         <div />

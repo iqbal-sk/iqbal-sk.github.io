@@ -241,19 +241,16 @@ const Experience = () => {
   return (
     <section
       id="experience"
-      className="relative max-w-page mx-auto px-6 md:px-10 py-24 md:py-32"
+      className="relative max-w-page mx-auto px-6 md:px-10 py-12 md:py-16"
     >
       <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12">
-        {/* Left gutter: sticky folio mark — pins as you read */}
-        <div className="hidden md:block relative" aria-hidden>
+        <div />
+        <div className="relative">
+          {/* Sticky folio mark — echoes the heading §-marker at the same x */}
           <div
-            className="sticky"
-            style={{
-              top: '5rem',
-              textAlign: 'right',
-              paddingRight: '1.75rem',
-              zIndex: 1,
-            }}
+            className="hidden md:block sticky pointer-events-none"
+            style={{ top: '5rem', height: 0, zIndex: 1 }}
+            aria-hidden
           >
             <span
               className="font-mono"
@@ -262,14 +259,13 @@ const Experience = () => {
                 color: 'var(--accent)',
                 letterSpacing: '0.04em',
                 fontWeight: 500,
-                opacity: 0.55,
+                opacity: 0.45,
               }}
             >
               §2
             </span>
           </div>
-        </div>
-        <div>
+
           <SectionHeading number="2" title="Experience." />
 
           <ol className="list-none" style={{ borderTop: '1px solid var(--rule)' }}>

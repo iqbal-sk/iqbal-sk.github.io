@@ -29,7 +29,7 @@ const Hero = () => {
   return (
     <section
       id="hero"
-      className="relative pt-32 md:pt-40 lg:pt-48 pb-28 md:pb-36"
+      className="relative pt-16 md:pt-20 lg:pt-24 pb-12 md:pb-16"
     >
       <div className="mx-auto max-w-page px-6 md:px-10">
         <div className="md:grid md:grid-cols-[minmax(0,640px)_220px] md:gap-x-16 md:items-start">

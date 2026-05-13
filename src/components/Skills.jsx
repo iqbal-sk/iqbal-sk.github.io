@@ -20,9 +20,11 @@ export default function Skills() {
   return (
     <section
       id="skills"
-      className="relative max-w-page mx-auto px-6 md:px-10 py-24 md:py-32"
+      className="relative max-w-page mx-auto px-6 md:px-10 py-12 md:py-16"
     >
-      <div>
+      <div className="md:grid md:grid-cols-[160px_minmax(0,1fr)] md:gap-x-12">
+        <div />
+        <div>
           <header className="mb-8">
             <motion.h2
               className="font-display flex items-baseline gap-4"
@@ -106,6 +108,7 @@ export default function Skills() {
           >
             {'// hover to explore'}
           </p>
+        </div>
       </div>
     </section>
   );

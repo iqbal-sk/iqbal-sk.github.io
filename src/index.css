@@ -32,7 +32,17 @@
   /* Easing */
   --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out-quint: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Width tokens (also exposed as utility classes below) */
+  --max-w-page: 1280px;
+  --max-w-reading: 68ch;
 }
+
+/* Direct utility classes — Tailwind v4 doesn't always auto-generate
+   max-w-{name} from theme tokens; defining them here keeps the class
+   name working everywhere it's already used. */
+.max-w-page    { max-width: var(--max-w-page); }
+.max-w-reading { max-width: var(--max-w-reading); }
 
 /* -----------------------------------------------------------------
    Light theme (default — wins first paint)
@@ -520,8 +530,8 @@ html[data-theme="dark"] .paper-grain::before {
 .microscale-rail-track {
   width: 2px;
   background: var(--rule);
-  position: relative;
   overflow: hidden;
+  /* Position is set by usage (absolute inside the relative gutter cell). */
 }
 .microscale-rail-fill {
   position: absolute;
