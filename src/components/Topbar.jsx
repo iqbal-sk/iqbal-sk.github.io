@@ -16,9 +16,9 @@ import siteConfig from '../siteConfig';
 
 const NAV = [
   { id: 'hero',         label: 'Home',         url: '#hero' },
-  { id: 'microscale',   label: 'Microscale',   url: '#microscale' },
   { id: 'experience',   label: 'Experience',   url: '#experience' },
   { id: 'case-studies', label: 'Case Studies', url: '#case-studies' },
+  { id: 'microscale',   label: 'Microscale',   url: '#microscale' },
   { id: 'skills',       label: 'Skills',       url: '#skills' },
 ];
 

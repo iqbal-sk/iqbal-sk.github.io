@@ -18,9 +18,11 @@ export default {
     name: 'Iqbal Shaik',
     short: 'Iqbal',
     pitch: [
-      'Currently at Haiva. Building Etora — a research workspace where biomedical teams read literature, analyze their own data, and explore the knowledge graph in one conversation, ',
+      'Currently at Haiva, building ',
+      { strong: 'configurable agent orchestration' },
+      ' — the runtime behind Etora, a research workspace where biomedical teams read literature, analyze their own data, and explore the knowledge graph in one conversation, ',
       { strong: 'in beta with a Yale lab' },
-      ' — and the voice agent platform behind live phone conversations. On the side, Microscale Academy, a field journal for small language models.',
+      ', and the voice-agent platform behind live phone conversations. On the side, Microscale Academy, a field journal for small language models.',
     ],
     email: 'mahammad@buffalo.edu',
     links: {

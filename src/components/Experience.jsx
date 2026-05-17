@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import CountUp from './CountUp';
 
 /* ---------------------------------------------------------------
-   §1 Experience — document timeline.
+   §1 Experience — document timeline. (Re-numbered to lead the page.)
 
    Date/theme/location in the left gutter, prose + chips in the
    reading column. Split-entry choreography: aside in from left,
@@ -43,12 +43,12 @@ const experience = [
     date: '2025 → now',
     theme: 'reasoning-models',
     metrics: [
-      { value: 7, suffix: 'pp', prefix: '+', label: 'reasoning gain' },
+      { value: 4, suffix: 'pp', prefix: '+', label: 'reasoning gain' },
       { value: 70, suffix: 'B', label: 'params' },
-      { value: 800, suffix: 'K', label: 'dialogues' },
+      { value: 4, suffix: 'K', label: 'eval set' },
     ],
     prose:
-      'When reasoning models start thinking out loud, they often forget who they’re supposed to be. Fine-tuned Llama-3 70B with QLoRA over hundreds of thousands of persona-rich dialogues to keep voice consistent through multi-step reasoning. Built the eval suite that measured whether intent survived chain-of-thought.',
+      'When reasoning models start thinking out loud, they often forget who they’re supposed to be. Fine-tuned Llama-3 70B with QLoRA on a persona-rich dialogue dataset to keep voice consistent through multi-step reasoning, and built the eval suite — a 4K-question benchmark — that measured whether intent survived chain-of-thought. The system lifted accuracy from 64% to 68%.',
     tags: ['Llama-3', 'QLoRA', 'Reasoning', 'PyTorch', 'Eval'],
   },
   {
@@ -262,11 +262,11 @@ const Experience = () => {
                 opacity: 0.45,
               }}
             >
-              §2
+              §1
             </span>
           </div>
 
-          <SectionHeading number="2" title="Experience." />
+          <SectionHeading number="1" title="Experience." />
 
           <ol className="list-none" style={{ borderTop: '1px solid var(--rule)' }}>
             {experience.map((item, i) => (

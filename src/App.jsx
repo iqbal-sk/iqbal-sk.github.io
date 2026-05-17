@@ -67,9 +67,9 @@ const App = () => {
         <main className="relative">
           <Hero />
           {/* <PulseSparkline days={30} microcopy="30-day pulse · shipped iterations." /> */}
-          <WhyMicroscale />
           <Experience />
           <CaseStudies />
+          <WhyMicroscale />
           <Skills />
           <Education />
         </main>

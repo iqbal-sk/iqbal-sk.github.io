@@ -74,6 +74,21 @@ const Hero = () => {
                 : identity.pitch}
             </motion.p>
 
+            <motion.p
+              className="mt-6 font-mono"
+              style={{
+                fontSize: '0.8125rem',
+                color: 'var(--ink-faint)',
+                letterSpacing: '0.02em',
+                lineHeight: 1.6,
+              }}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5, ease: EASE }}
+            >
+              now <span style={{ color: 'var(--accent)' }}>→</span> agent orchestration · graph rag · real-time voice · observability
+            </motion.p>
+
             <motion.ul
               className="mt-12 list-none"
               initial="hidden"

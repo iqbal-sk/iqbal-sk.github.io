@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 /* ---------------------------------------------------------------
-   §2 Microscale — the slow path.
+   §3 Microscale — the slow path.
 
    Long-form essay on the motive behind the curriculum. Read-first
    prose, single column, slightly wider reading measure. Same gutter
@@ -106,12 +106,12 @@ export default function WhyMicroscale() {
                 opacity: 0.45,
               }}
             >
-              §1
+              §3
             </span>
           </div>
 
           <SectionHeading
-            number="1"
+            number="3"
             title="Microscale — the slow path."
             subtitle="Why I started building a curriculum for small language models, and what I want learners to leave with."
           />
